@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -223,6 +226,7 @@ public struct SettingsView: View {
     }
 }
 
+#if canImport(UIKit)
 public struct ShareSheet: UIViewControllerRepresentable {
     public let activityItems: [Any]
 
@@ -232,3 +236,11 @@ public struct ShareSheet: UIViewControllerRepresentable {
 
     public func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
+#else
+public struct ShareSheet: View {
+    public let activityItems: [Any]
+    public var body: some View {
+        Text("Поделиться")
+    }
+}
+#endif

@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct LockView: View {
     @ObservedObject var vaultService: CryptoVaultService
@@ -189,8 +192,10 @@ public struct LockView: View {
     }
 
     private func appendDigit(_ digit: String) {
+        #if canImport(UIKit)
         let impact = UIImpactFeedbackGenerator(style: .light)
         impact.impactOccurred()
+        #endif
 
         guard enteredPin.count < 6 else { return }
         enteredPin.append(digit)
@@ -206,8 +211,10 @@ public struct LockView: View {
     }
 
     private func deleteDigit() {
+        #if canImport(UIKit)
         let impact = UIImpactFeedbackGenerator(style: .light)
         impact.impactOccurred()
+        #endif
         guard !enteredPin.isEmpty else { return }
         enteredPin.removeLast()
         errorMessage = nil
@@ -216,11 +223,15 @@ public struct LockView: View {
     private func attemptUnlock() {
         do {
             try vaultService.unlock(password: enteredPin)
+            #if canImport(UIKit)
             let notify = UINotificationFeedbackGenerator()
             notify.notificationOccurred(.success)
+            #endif
         } catch {
+            #if canImport(UIKit)
             let notify = UINotificationFeedbackGenerator()
             notify.notificationOccurred(.error)
+            #endif
             errorMessage = "Неверный PIN"
             enteredPin = ""
         }
@@ -229,8 +240,10 @@ public struct LockView: View {
     private func createVaultWithPin() {
         do {
             try vaultService.initialize(password: enteredPin)
+            #if canImport(UIKit)
             let notify = UINotificationFeedbackGenerator()
             notify.notificationOccurred(.success)
+            #endif
         } catch {
             errorMessage = error.localizedDescription
             enteredPin = ""

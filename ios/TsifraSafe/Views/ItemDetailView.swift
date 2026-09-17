@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct ItemDetailView: View {
     @Environment(\.dismiss) private var dismiss
@@ -109,9 +112,11 @@ public struct ItemDetailView: View {
 
                                         if !password.isEmpty {
                                             Button(action: {
+                                                #if canImport(UIKit)
                                                 UIPasteboard.general.string = password
                                                 let impact = UINotificationFeedbackGenerator()
                                                 impact.notificationOccurred(.success)
+                                                #endif
                                             }) {
                                                 Image(systemName: "doc.on.doc.fill")
                                                     .foregroundColor(.emeraldAccent)

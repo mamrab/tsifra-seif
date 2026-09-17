@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct DashboardView: View {
     @ObservedObject var vaultService: CryptoVaultService
@@ -101,8 +104,10 @@ public struct DashboardView: View {
                         HStack(spacing: 8) {
                             ForEach(categories, id: \.self) { cat in
                                 categoryPill(title: cat, isSelected: selectedCategory == cat) {
+                                    #if canImport(UIKit)
                                     let impact = UIImpactFeedbackGenerator(style: .light)
                                     impact.impactOccurred()
+                                    #endif
                                     selectedCategory = cat
                                 }
                             }
@@ -188,8 +193,10 @@ public struct DashboardView: View {
 
     private func headerIconButton(icon: String, color: Color, action: @escaping () -> Void) -> some View {
         Button(action: {
+            #if canImport(UIKit)
             let impact = UIImpactFeedbackGenerator(style: .light)
             impact.impactOccurred()
+            #endif
             action()
         }) {
             ZStack {
@@ -260,9 +267,11 @@ public struct DashboardView: View {
             // Quick Copy Action Button
             if let pass = item.password, !pass.isEmpty {
                 Button(action: {
+                    #if canImport(UIKit)
                     UIPasteboard.general.string = pass
                     let impact = UINotificationFeedbackGenerator()
                     impact.notificationOccurred(.success)
+                    #endif
                     copiedItemId = item.id
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         if copiedItemId == item.id { copiedItemId = nil }

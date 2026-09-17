@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct GeneratorSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -143,7 +146,9 @@ public struct GeneratorSheet: View {
                         } else {
                             LiquidGlassButton(title: isCopied ? "Скопировано!" : "Скопировать", systemIcon: isCopied ? "checkmark" : "doc.on.doc") {
                                 if let val = generated?.value {
+                                    #if canImport(UIKit)
                                     UIPasteboard.general.string = val
+                                    #endif
                                     isCopied = true
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                                         isCopied = false
@@ -170,8 +175,10 @@ public struct GeneratorSheet: View {
     }
 
     private func regenerate() {
+        #if canImport(UIKit)
         let impact = UIImpactFeedbackGenerator(style: .light)
         impact.impactOccurred()
+        #endif
 
         if mode == 0 {
             generated = PasswordGenerator.generatePassword(

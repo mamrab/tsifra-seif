@@ -1,4 +1,4 @@
-name: iOS Swift Build (Liquid Glass)
+name: iOS Swift Build (.ipa)
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-ios:
-    name: Build Native Swift iOS App
+    name: Build Native Swift iOS App (.ipa)
     runs-on: macos-14
 
     steps:
@@ -21,33 +21,36 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
           xcodebuild -version
 
-      - name: Build Swift Package Core
-        working-directory: ios
-        run: |
-          swift build -v
-
       - name: Build Xcode iOS App Target (.app)
         run: |
           xcodebuild \
             -project ios/TsifraSafe.xcodeproj \
             -scheme TsifraSafe \
-            -destination "generic/platform=iOS" \
+            -sdk iphoneos \
             -configuration Release \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             clean build
 
-      - name: Locate & Package Built Products
+      - name: Package .ipa File
         run: |
-          mkdir -p build-output
-          find ~/Library/Developer/Xcode/DerivedData -name "TsifraSafe.app" -exec cp -R {} build-output/ \;
+          mkdir -p build-output/Payload
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "TsifraSafe.app" -type d | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: TsifraSafe.app not found in DerivedData!"
+            exit 1
+          fi
+          echo "Found app at: $APP_PATH"
+          cp -R "$APP_PATH" build-output/Payload/
           cd build-output
-          zip -r TsifraSafe-iOS.zip TsifraSafe.app
+          zip -r TsifraSafe.ipa Payload
+          echo "Generated IPA:"
+          ls -lh TsifraSafe.ipa
 
-      - name: Upload iOS App Artifact
+      - name: Upload iOS .ipa Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TsifraSafe-iOS-App
-          path: build-output/TsifraSafe-iOS.zip
+          name: TsifraSafe-iOS-IPA
+          path: build-output/TsifraSafe.ipa
           retention-days: 14

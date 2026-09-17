@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct LiquidGlassBackground: View {
     @State private var animateGradients = false
@@ -110,8 +113,10 @@ public struct LiquidGlassButton: View {
 
     public var body: some View {
         Button(action: {
+            #if canImport(UIKit)
             let impact = UIImpactFeedbackGenerator(style: .medium)
             impact.impactOccurred()
+            #endif
             action()
         }) {
             HStack(spacing: 8) {
