@@ -5,9 +5,20 @@ public struct GeneratedPassword {
     public let entropy: Double
     public let strengthLabel: String
     public let score: Int
+
+    public init(value: String, entropy: Double, strengthLabel: String, score: Int) {
+        self.value = value
+        self.entropy = entropy
+        self.strengthLabel = strengthLabel
+        self.score = score
+    }
 }
 
 public final class PasswordGenerator {
+    public static let shared = PasswordGenerator()
+
+    public init() {}
+
     private static let uppercaseChars = Array("ABCDEFGHJKLMNPQRSTUVWXYZ")
     private static let lowercaseChars = Array("abcdefghijkmnopqrstuvwxyz")
     private static let digitChars = Array("23456789")
@@ -21,6 +32,32 @@ public final class PasswordGenerator {
         "cascade", "dune", "echo", "frost", "granite", "horizon", "infinity", "keystone", "lunar"
     ]
 
+    // Instance wrapper methods for compatibility
+    public func generate(
+        length: Int = 18,
+        includeUppercase: Bool = true,
+        includeLowercase: Bool = true,
+        includeDigits: Bool = true,
+        includeSymbols: Bool = true
+    ) -> GeneratedPassword {
+        Self.generatePassword(
+            length: length,
+            includeUppercase: includeUppercase,
+            includeLowercase: includeLowercase,
+            includeDigits: includeDigits,
+            includeSymbols: includeSymbols
+        )
+    }
+
+    public func generatePassphrase(wordCount: Int = 4, separator: String = "-") -> GeneratedPassword {
+        Self.generatePassphrase(wordCount: wordCount, separator: separator)
+    }
+
+    public func generatePin(length: Int = 6) -> GeneratedPassword {
+        Self.generatePin(length: length)
+    }
+
+    // Static core methods
     public static func generatePassword(
         length: Int = 18,
         includeUppercase: Bool = true,

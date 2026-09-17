@@ -43,7 +43,7 @@ public struct SettingsView: View {
                                 Spacer()
                                 Toggle("", isOn: $biometricsEnabled)
                                     .tint(.white)
-                                    .onChange(of: biometricsEnabled) { _ in saveSettings() }
+                                    .onChange(of: biometricsEnabled) { saveSettings() }
                             }
 
                             Divider().background(Color.white.opacity(0.1))
@@ -57,7 +57,7 @@ public struct SettingsView: View {
                                 Spacer()
                                 Toggle("", isOn: $lockOnBackground)
                                     .tint(.white)
-                                    .onChange(of: lockOnBackground) { _ in saveSettings() }
+                                    .onChange(of: lockOnBackground) { saveSettings() }
                             }
 
                             Divider().background(Color.white.opacity(0.1))
@@ -77,7 +77,7 @@ public struct SettingsView: View {
                                 }
                                 .pickerStyle(.menu)
                                 .tint(.white)
-                                .onChange(of: autoLockMinutes) { _ in saveSettings() }
+                                .onChange(of: autoLockMinutes) { saveSettings() }
                             }
                         }
                         .padding(18)

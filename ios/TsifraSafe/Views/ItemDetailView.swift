@@ -183,7 +183,7 @@ public struct ItemDetailView: View {
                                             }
                                             .pickerStyle(.segmented)
                                             .frame(width: 140)
-                                            .onChange(of: cryptoWordCount) { newCount in
+                                            .onChange(of: cryptoWordCount) { _, newCount in
                                                 adjustWordCount(to: newCount)
                                             }
                                         }

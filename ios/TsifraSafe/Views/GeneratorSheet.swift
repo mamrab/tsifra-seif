@@ -37,7 +37,7 @@ public struct GeneratorSheet: View {
                         Text("PIN").tag(2)
                     }
                     .pickerStyle(.segmented)
-                    .onChange(of: mode) { _ in regenerate() }
+                    .onChange(of: mode) { regenerate() }
 
                     // Display Box with Entropy
                     VStack(spacing: 12) {
@@ -75,26 +75,26 @@ public struct GeneratorSheet: View {
                                 }
                                 Slider(value: $length, in: 8...48, step: 1)
                                     .tint(.white)
-                                    .onChange(of: length) { _ in regenerate() }
+                                    .onChange(of: length) { regenerate() }
                             }
 
                             Divider().background(Color.white.opacity(0.1))
 
                             Toggle("Заглавные (A-Z)", isOn: $includeUpper)
                                 .tint(.white)
-                                .onChange(of: includeUpper) { _ in regenerate() }
+                                .onChange(of: includeUpper) { regenerate() }
 
                             Toggle("Строчные (a-z)", isOn: $includeLower)
                                 .tint(.white)
-                                .onChange(of: includeLower) { _ in regenerate() }
+                                .onChange(of: includeLower) { regenerate() }
 
                             Toggle("Цифры (0-9)", isOn: $includeDigits)
                                 .tint(.white)
-                                .onChange(of: includeDigits) { _ in regenerate() }
+                                .onChange(of: includeDigits) { regenerate() }
 
                             Toggle("Спецсимволы (!@#$)", isOn: $includeSymbols)
                                 .tint(.white)
-                                .onChange(of: includeSymbols) { _ in regenerate() }
+                                .onChange(of: includeSymbols) { regenerate() }
                         } else if mode == 1 {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Количество слов: \(Int(wordCount))")
@@ -102,7 +102,7 @@ public struct GeneratorSheet: View {
                                     .foregroundColor(.white)
                                 Slider(value: $wordCount, in: 3...8, step: 1)
                                     .tint(.white)
-                                    .onChange(of: wordCount) { _ in regenerate() }
+                                    .onChange(of: wordCount) { regenerate() }
                             }
                         } else {
                             VStack(alignment: .leading, spacing: 6) {
@@ -111,7 +111,7 @@ public struct GeneratorSheet: View {
                                     .foregroundColor(.white)
                                 Slider(value: $pinLength, in: 4...12, step: 1)
                                     .tint(.white)
-                                    .onChange(of: pinLength) { _ in regenerate() }
+                                    .onChange(of: pinLength) { regenerate() }
                             }
                         }
                     }
