@@ -34,7 +34,8 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
   const refreshSecret = useCallback(async (customCfg?: GeneratorConfig) => {
     setIsRefreshing(true);
     try {
-      const result = await vaultApi.generatePassword(customCfg || config);
+      const activeCfg = customCfg || config;
+      const result = await vaultApi.generatePassword(activeCfg);
       setGenerated(result);
     } catch (err) {
       console.error('Error generating secret:', err);
@@ -51,6 +52,19 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
 
   const handleConfigChange = (patch: Partial<GeneratorConfig>) => {
     const updated = { ...config, ...patch };
+
+    // Prevent disabling all character types in password mode
+    if (updated.mode === 'password') {
+      if (
+        !updated.includeUppercase &&
+        !updated.includeLowercase &&
+        !updated.includeDigits &&
+        !updated.includeSymbols
+      ) {
+        updated.includeLowercase = true;
+      }
+    }
+
     setConfig(updated);
     refreshSecret(updated);
   };
@@ -63,24 +77,6 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
   };
 
   if (!isOpen) return null;
-
-  const strengthColor = () => {
-    if (!generated) return 'bg-slate-700';
-    switch (generated.strengthLevel) {
-      case 'weak':
-        return 'bg-red-500';
-      case 'fair':
-        return 'bg-amber-500';
-      case 'good':
-        return 'bg-blue-500';
-      case 'strong':
-        return 'bg-emerald-500';
-      case 'excellent':
-        return 'bg-teal-400';
-      default:
-        return 'bg-emerald-500';
-    }
-  };
 
   const strengthLabel = () => {
     if (!generated) return '';
@@ -101,32 +97,33 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 relative">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in">
+      <div className="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl p-6 relative animate-scale-in">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white">
               <Sparkles className="w-4 h-4" />
             </div>
-            <h3 className="text-base font-semibold text-white">Генератор паролей</h3>
+            <h3 className="text-base font-semibold text-white">Генератор секретов</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Mode Tabs */}
-        <div className="grid grid-cols-3 gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 my-5">
+        <div className="grid grid-cols-3 gap-1 bg-zinc-900 p-1 rounded-xl border border-zinc-800 my-5">
           <button
             type="button"
-            onClick={() => handleConfigChange({ mode: 'password' })}
+            onClick={() => handleConfigChange({ mode: 'password', length: config.length < 6 ? 16 : config.length })}
             className={`py-2 text-xs font-medium rounded-lg transition-all ${
               config.mode === 'password'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-black font-semibold shadow-sm'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             Пароль
@@ -136,28 +133,28 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
             onClick={() => handleConfigChange({ mode: 'passphrase' })}
             className={`py-2 text-xs font-medium rounded-lg transition-all ${
               config.mode === 'passphrase'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-black font-semibold shadow-sm'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             Кодовая фраза
           </button>
           <button
             type="button"
-            onClick={() => handleConfigChange({ mode: 'pin' })}
+            onClick={() => handleConfigChange({ mode: 'pin', length: config.length > 16 || config.length < 4 ? 6 : config.length })}
             className={`py-2 text-xs font-medium rounded-lg transition-all ${
               config.mode === 'pin'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-white text-black font-semibold shadow-sm'
+                : 'text-zinc-400 hover:text-white'
             }`}
           >
             PIN-код
           </button>
         </div>
 
-        {/* Generated Value Display Box */}
-        <div className="p-4 bg-slate-950 rounded-xl border border-slate-800/90 relative group mb-5">
-          <div className="font-mono text-base md:text-lg text-emerald-400 break-all select-all tracking-wide min-h-[48px] flex items-center pr-20">
+        {/* Generated Value Box */}
+        <div className="p-4 bg-black rounded-xl border border-zinc-800 relative group mb-5">
+          <div className="font-mono text-base md:text-lg text-white break-all select-all tracking-wide min-h-[48px] flex items-center pr-20">
             {generated?.value || '...'}
           </div>
 
@@ -166,37 +163,37 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
               onClick={() => refreshSecret()}
               disabled={isRefreshing}
               title="Перегенерировать"
-              className="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition-all active:scale-90"
+              className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 hover:text-white transition-all active:scale-95"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
             <button
               onClick={handleCopy}
               title="Скопировать в буфер обмена"
-              className="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition-all active:scale-90"
+              className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 hover:text-white transition-all active:scale-95"
             >
-              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+              {copied ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
             </button>
           </div>
 
           {/* Strength & Entropy Indicator Bar */}
-          <div className="mt-3 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs">
+          <div className="mt-3 pt-3 border-t border-zinc-850 flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden flex gap-0.5">
+              <div className="w-24 h-1.5 bg-zinc-800 rounded-full overflow-hidden flex gap-0.5">
                 {[0, 1, 2, 3, 4].map((step) => (
                   <div
                     key={step}
                     className={`flex-1 transition-all ${
                       generated && step <= (generated.score ?? 3)
-                        ? strengthColor()
-                        : 'bg-slate-800'
+                        ? 'bg-white'
+                        : 'bg-zinc-800'
                     }`}
                   />
                 ))}
               </div>
-              <span className="font-medium text-slate-300">{strengthLabel()}</span>
+              <span className="font-medium text-zinc-300">{strengthLabel()}</span>
             </div>
-            <span className="text-slate-400 font-mono">
+            <span className="text-zinc-400 font-mono text-[11px]">
               {generated?.entropy} бит энтропии
             </span>
           </div>
@@ -207,9 +204,9 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
           {config.mode === 'password' && (
             <>
               <div>
-                <div className="flex justify-between items-center text-xs text-slate-300 mb-2">
+                <div className="flex justify-between items-center text-xs text-zinc-300 mb-2">
                   <span>Длина пароля</span>
-                  <span className="font-mono font-semibold text-emerald-400 text-sm">
+                  <span className="font-mono font-semibold text-white text-sm">
                     {config.length} символов
                   </span>
                 </div>
@@ -219,55 +216,55 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
                   max="48"
                   value={config.length}
                   onChange={(e) => handleConfigChange({ length: parseInt(e.target.value) })}
-                  className="w-full accent-emerald-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                  className="w-full accent-white h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5 pt-2">
-                <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer select-none">
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <label className="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={config.includeUppercase}
                     onChange={(e) => handleConfigChange({ includeUppercase: e.target.checked })}
-                    className="rounded bg-slate-950 border-slate-700 text-emerald-500 focus:ring-emerald-500 w-4 h-4"
+                    className="rounded bg-black border-zinc-700 text-white focus:ring-white w-4 h-4"
                   />
                   <span>Заглавные (A-Z)</span>
                 </label>
-                <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer select-none">
+                <label className="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={config.includeLowercase}
                     onChange={(e) => handleConfigChange({ includeLowercase: e.target.checked })}
-                    className="rounded bg-slate-950 border-slate-700 text-emerald-500 focus:ring-emerald-500 w-4 h-4"
+                    className="rounded bg-black border-zinc-700 text-white focus:ring-white w-4 h-4"
                   />
                   <span>Строчные (a-z)</span>
                 </label>
-                <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer select-none">
+                <label className="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={config.includeDigits}
                     onChange={(e) => handleConfigChange({ includeDigits: e.target.checked })}
-                    className="rounded bg-slate-950 border-slate-700 text-emerald-500 focus:ring-emerald-500 w-4 h-4"
+                    className="rounded bg-black border-zinc-700 text-white focus:ring-white w-4 h-4"
                   />
                   <span>Цифры (0-9)</span>
                 </label>
-                <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer select-none">
+                <label className="flex items-center gap-2.5 text-xs text-zinc-300 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={config.includeSymbols}
                     onChange={(e) => handleConfigChange({ includeSymbols: e.target.checked })}
-                    className="rounded bg-slate-950 border-slate-700 text-emerald-500 focus:ring-emerald-500 w-4 h-4"
+                    className="rounded bg-black border-zinc-700 text-white focus:ring-white w-4 h-4"
                   />
                   <span>Спецсимволы (!@#$)</span>
                 </label>
               </div>
 
-              <label className="flex items-center gap-2.5 text-xs text-slate-400 pt-1 cursor-pointer select-none">
+              <label className="flex items-center gap-2.5 text-xs text-zinc-400 pt-1 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={config.excludeAmbiguous}
                   onChange={(e) => handleConfigChange({ excludeAmbiguous: e.target.checked })}
-                  className="rounded bg-slate-950 border-slate-700 text-emerald-500 focus:ring-emerald-500 w-4 h-4"
+                  className="rounded bg-black border-zinc-700 text-white focus:ring-white w-4 h-4"
                 />
                 <span>Исключить неоднозначные (1, l, I, 0, O)</span>
               </label>
@@ -275,29 +272,56 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
           )}
 
           {config.mode === 'passphrase' && (
-            <div>
-              <div className="flex justify-between items-center text-xs text-slate-300 mb-2">
-                <span>Количество слов</span>
-                <span className="font-mono font-semibold text-emerald-400 text-sm">
-                  {config.wordCount} слова
-                </span>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center text-xs text-zinc-300 mb-2">
+                  <span>Количество слов</span>
+                  <span className="font-mono font-semibold text-white text-sm">
+                    {config.wordCount} слова
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="3"
+                  max="8"
+                  value={config.wordCount}
+                  onChange={(e) => handleConfigChange({ wordCount: parseInt(e.target.value) })}
+                  className="w-full accent-white h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
+                />
               </div>
-              <input
-                type="range"
-                min="3"
-                max="8"
-                value={config.wordCount}
-                onChange={(e) => handleConfigChange({ wordCount: parseInt(e.target.value) })}
-                className="w-full accent-emerald-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
-              />
+
+              <div>
+                <label className="block text-xs text-zinc-300 mb-1.5">Разделитель слов</label>
+                <div className="flex gap-2">
+                  {[
+                    { label: 'Дефис (-)', val: '-' },
+                    { label: 'Точка (.)', val: '.' },
+                    { label: 'Прочерк (_)', val: '_' },
+                    { label: 'Пробел ( )', val: ' ' },
+                  ].map((s) => (
+                    <button
+                      key={s.val}
+                      type="button"
+                      onClick={() => handleConfigChange({ separator: s.val })}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all border ${
+                        config.separator === s.val
+                          ? 'bg-white text-black border-white font-semibold'
+                          : 'bg-black border-zinc-800 text-zinc-400 hover:text-white'
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
           {config.mode === 'pin' && (
             <div>
-              <div className="flex justify-between items-center text-xs text-slate-300 mb-2">
+              <div className="flex justify-between items-center text-xs text-zinc-300 mb-2">
                 <span>Длина PIN-кода</span>
-                <span className="font-mono font-semibold text-emerald-400 text-sm">
+                <span className="font-mono font-semibold text-white text-sm">
                   {config.length} цифр
                 </span>
               </div>
@@ -307,14 +331,14 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
                 max="12"
                 value={config.length}
                 onChange={(e) => handleConfigChange({ length: parseInt(e.target.value) })}
-                className="w-full accent-emerald-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                className="w-full accent-white h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
               />
             </div>
           )}
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-6 pt-4 border-t border-slate-800 flex gap-3">
+        <div className="mt-6 pt-4 border-t border-zinc-800 flex gap-3">
           {onSelectPassword ? (
             <button
               onClick={() => {
@@ -323,7 +347,7 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
                   onClose();
                 }
               }}
-              className="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-500/20"
+              className="flex-1 py-3 px-4 bg-white hover:bg-zinc-200 text-black font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-sm"
             >
               <ShieldCheck className="w-4 h-4" />
               Вставить в запись
@@ -331,7 +355,7 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
           ) : (
             <button
               onClick={handleCopy}
-              className="flex-1 py-3 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-500/20"
+              className="flex-1 py-3 px-4 bg-white hover:bg-zinc-200 text-black font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-sm"
             >
               {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Скопировано!' : 'Скопировать пароль'}
@@ -340,7 +364,7 @@ export const PasswordGeneratorModal: React.FC<PasswordGeneratorModalProps> = ({
 
           <button
             onClick={onClose}
-            className="py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors"
+            className="py-3 px-5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-sm font-medium transition-colors"
           >
             Закрыть
           </button>

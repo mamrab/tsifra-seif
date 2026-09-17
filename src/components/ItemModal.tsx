@@ -14,9 +14,12 @@ import {
   Plus,
   Sparkles,
   ExternalLink,
+  Coins,
 } from 'lucide-react';
-import { CustomField, VaultItem, VaultItemType } from '../types/vault';
+import { CustomField, VaultItem, VaultItemType, CryptoWalletData } from '../types/vault';
 import { copyToClipboardSecurely } from '../utils/clipboard';
+import { CryptoSeedGrid } from './CryptoSeedGrid';
+import { SmartHintsBar } from './SmartHintsBar';
 
 interface ItemModalProps {
   isOpen: boolean;
@@ -27,6 +30,19 @@ interface ItemModalProps {
   onDelete?: (id: string) => Promise<void>;
   onOpenGenerator: (callback: (password: string) => void) => void;
 }
+
+const defaultCryptoData: CryptoWalletData = {
+  network: 'Ethereum / EVM',
+  wordCount: 12,
+  words: Array(12).fill(''),
+  privateKey: '',
+  address: '',
+  derivationPath: "m/44'/60'/0'/0/0",
+  passphrase: '',
+  chainId: '1',
+  rpcUrl: 'https://eth.llamarpc.com',
+  walletApp: 'MetaMask / Rabby',
+};
 
 export const ItemModal: React.FC<ItemModalProps> = ({
   isOpen,
@@ -49,6 +65,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   const [favorite, setFavorite] = useState(item?.favorite || false);
   const [tagsInput, setTagsInput] = useState(item?.tags.join(', ') || '');
   const [customFields, setCustomFields] = useState<CustomField[]>(item?.customFields || []);
+  const [cryptoData, setCryptoData] = useState<CryptoWalletData>(item?.cryptoData || defaultCryptoData);
 
   const [showPassword, setShowPassword] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -68,6 +85,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       setFavorite(item.favorite);
       setTagsInput(item.tags.join(', '));
       setCustomFields(item.customFields || []);
+      setCryptoData(item.cryptoData || defaultCryptoData);
     } else {
       setTitle('');
       setItemType('password');
@@ -79,6 +97,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
       setFavorite(false);
       setTagsInput('');
       setCustomFields([]);
+      setCryptoData(defaultCryptoData);
     }
     setConfirmDelete(false);
   }, [item, categories]);
@@ -124,13 +143,14 @@ export const ItemModal: React.FC<ItemModalProps> = ({
         title: title.trim(),
         itemType,
         category,
-        username: username.trim() || undefined,
-        password: password || undefined,
-        url: url.trim() || undefined,
+        username: itemType !== 'secureNote' && itemType !== 'cryptoWallet' ? (username.trim() || undefined) : undefined,
+        password: itemType !== 'secureNote' && itemType !== 'cryptoWallet' ? (password || undefined) : undefined,
+        url: itemType === 'password' ? (url.trim() || undefined) : undefined,
         notes: notes.trim() || undefined,
         tags,
         favorite,
         customFields,
+        cryptoData: itemType === 'cryptoWallet' ? cryptoData : undefined,
         createdAt: item?.createdAt || Date.now(),
         updatedAt: Date.now(),
       };
@@ -156,44 +176,45 @@ export const ItemModal: React.FC<ItemModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto animate-fade-in">
+      <div className="w-full max-w-2xl bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl p-6 relative max-h-[92vh] flex flex-col animate-scale-in">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800 flex-shrink-0">
+        <div className="flex items-center justify-between pb-4 border-b border-zinc-800 flex-shrink-0">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setFavorite(!favorite)}
               className={`p-2 rounded-xl border transition-all ${
                 favorite
-                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                  : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:text-slate-200'
+                  ? 'bg-white text-black border-white'
+                  : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white'
               }`}
               title={favorite ? 'Удалить из избранного' : 'Добавить в избранное'}
             >
-              <Star className="w-5 h-5 fill-current" />
+              <Star className="w-4 h-4 fill-current" />
             </button>
-            <h3 className="text-lg font-semibold text-white">
+            <h3 className="text-base font-semibold text-white">
               {isNew ? 'Новая запись в сейфе' : 'Редактирование записи'}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-850 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Scrollable Form Body */}
-        <form id="vault-item-form" onSubmit={handleSubmit} className="overflow-y-auto py-5 space-y-4 pr-1 flex-1">
+        <form id="vault-item-form" onSubmit={handleSubmit} className="overflow-y-auto py-4 space-y-4 pr-1 flex-1">
           {/* Item Type Selector */}
-          <div className="grid grid-cols-4 gap-2 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80">
+          <div className="grid grid-cols-5 gap-1.5 bg-zinc-900/90 p-1.5 rounded-xl border border-zinc-800">
             {[
               { type: 'password', label: 'Пароль', icon: Lock },
+              { type: 'cryptoWallet', label: 'Крипто', icon: Coins },
               { type: 'secureNote', label: 'Заметка', icon: FileText },
               { type: 'paymentCard', label: 'Карта', icon: CreditCard },
-              { type: 'serverKey', label: 'Ключ / API', icon: Server },
+              { type: 'serverKey', label: 'Ключ/API', icon: Server },
             ].map(({ type, label, icon: Icon }) => (
               <button
                 key={type}
@@ -201,8 +222,8 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 onClick={() => setItemType(type as VaultItemType)}
                 className={`py-2 px-1 text-xs font-medium rounded-lg flex flex-col items-center gap-1.5 transition-all ${
                   itemType === type
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-white text-black font-semibold shadow-sm'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -211,32 +232,44 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             ))}
           </div>
 
+          {/* Smart Hints Bar */}
+          <SmartHintsBar
+            itemType={itemType}
+            title={title}
+            username={username}
+            password={password}
+            url={url}
+            notes={notes}
+            tags={tagsInput.split(',').filter(Boolean)}
+            cryptoData={cryptoData}
+          />
+
           {/* Title & Category */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="md:col-span-2">
-              <label className="block text-xs font-medium text-slate-300 mb-1">
-                Название <span className="text-emerald-400">*</span>
+              <label className="block text-xs font-medium text-zinc-300 mb-1">
+                Название <span className="text-white">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="например: Google, GitHub, Сбербанк"
-                className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
+                placeholder={itemType === 'cryptoWallet' ? 'Например: MetaMask (Main), Ledger Cold' : 'например: Google, GitHub, Сбербанк'}
+                className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-white text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-zinc-300 mb-1">
                 Категория
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-emerald-500 cursor-pointer"
+                className="w-full px-3 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-white cursor-pointer"
               >
                 {categories.map((c) => (
-                  <option key={c} value={c}>
+                  <option key={c} value={c} className="bg-zinc-900 text-white">
                     {c}
                   </option>
                 ))}
@@ -244,10 +277,20 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             </div>
           </div>
 
+          {/* Dedicated Crypto Wallet Seed Section */}
+          {itemType === 'cryptoWallet' && (
+            <div className="border border-zinc-800 rounded-2xl p-4 bg-black/50 space-y-4">
+              <CryptoSeedGrid
+                data={cryptoData}
+                onChange={(updated) => setCryptoData(updated)}
+              />
+            </div>
+          )}
+
           {/* Username (if password or server key or card) */}
-          {itemType !== 'secureNote' && (
+          {itemType !== 'secureNote' && itemType !== 'cryptoWallet' && (
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-zinc-300 mb-1">
                 Логин / Email / Имя пользователя
               </label>
               <div className="relative">
@@ -256,17 +299,17 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="name@domain.com или login"
-                  className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm pr-11"
+                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-white text-sm pr-11"
                 />
                 {username && (
                   <button
                     type="button"
                     onClick={() => handleCopy(username, 'username')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-200"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-white"
                     title="Скопировать логин"
                   >
                     {copiedField === 'username' ? (
-                      <Check className="w-4 h-4 text-emerald-400" />
+                      <Check className="w-4 h-4 text-white" />
                     ) : (
                       <Copy className="w-4 h-4" />
                     )}
@@ -277,10 +320,10 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           )}
 
           {/* Password (if password or card or serverKey) */}
-          {itemType !== 'secureNote' && (
+          {itemType !== 'secureNote' && itemType !== 'cryptoWallet' && (
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-medium text-slate-300">
+                <label className="text-xs font-medium text-zinc-300">
                   {itemType === 'paymentCard' ? 'CVV / PIN' : 'Пароль'}
                 </label>
                 <button
@@ -290,7 +333,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                       setPassword(newPass);
                     })
                   }
-                  className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 font-medium transition-colors"
+                  className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 font-medium transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   Сгенерировать
@@ -303,13 +346,13 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Секретный пароль"
-                  className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono text-sm pr-20"
+                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-white font-mono text-sm pr-20"
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="p-1.5 text-slate-400 hover:text-slate-200"
+                    className="p-1.5 text-zinc-400 hover:text-white"
                     title={showPassword ? 'Скрыть' : 'Показать'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -318,11 +361,11 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleCopy(password, 'password')}
-                      className="p-1.5 text-slate-400 hover:text-slate-200"
+                      className="p-1.5 text-zinc-400 hover:text-white"
                       title="Скопировать пароль"
                     >
                       {copiedField === 'password' ? (
-                        <Check className="w-4 h-4 text-emerald-400" />
+                        <Check className="w-4 h-4 text-white" />
                       ) : (
                         <Copy className="w-4 h-4" />
                       )}
@@ -336,7 +379,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
           {/* URL */}
           {itemType === 'password' && (
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">
+              <label className="block text-xs font-medium text-zinc-300 mb-1">
                 Веб-сайт / URL
               </label>
               <div className="relative">
@@ -345,14 +388,14 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://example.com"
-                  className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm pr-11"
+                  className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-white text-sm pr-11"
                 />
                 {url && (
                   <a
                     href={url}
                     target="_blank"
                     rel="noreferrer"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-emerald-400"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-white"
                     title="Перейти по ссылке"
                   >
                     <ExternalLink className="w-4 h-4" />
@@ -364,28 +407,28 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
           {/* Secure Notes */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">
-              Защищенная заметка / Описание
+            <label className="block text-xs font-medium text-zinc-300 mb-1">
+              {itemType === 'cryptoWallet' ? 'Заметки к кошельку' : 'Защищенная заметка / Описание'}
             </label>
             <textarea
               rows={itemType === 'secureNote' ? 7 : 3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Дополнительные секретные данные, seed-фразы, коды восстановления..."
-              className="w-full px-3.5 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm font-mono resize-y"
+              placeholder="Дополнительные секретные данные, пин-коды, подсказки..."
+              className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-white text-sm font-mono resize-y"
             />
           </div>
 
           {/* Custom Fields */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-xs font-medium text-slate-300">
+              <label className="text-xs font-medium text-zinc-300">
                 Дополнительные поля
               </label>
               <button
                 type="button"
                 onClick={handleAddField}
-                className="text-xs text-slate-400 hover:text-emerald-400 flex items-center gap-1 transition-colors"
+                className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Добавить поле
@@ -397,29 +440,29 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 {customFields.map((field, idx) => (
                   <div
                     key={field.id}
-                    className="flex items-center gap-2 p-2 rounded-xl bg-slate-950/60 border border-slate-800"
+                    className="flex items-center gap-2 p-2 rounded-xl bg-zinc-900/60 border border-zinc-800"
                   >
                     <input
                       type="text"
                       value={field.label}
                       onChange={(e) => handleUpdateField(idx, { label: e.target.value })}
                       placeholder="Название"
-                      className="w-1/3 px-2.5 py-1.5 bg-slate-900 border border-slate-700/70 rounded-lg text-xs text-white"
+                      className="w-1/3 px-2.5 py-1.5 bg-zinc-950 border border-zinc-700/70 rounded-lg text-xs text-white"
                     />
                     <input
                       type={field.isSecret ? 'password' : 'text'}
                       value={field.value}
                       onChange={(e) => handleUpdateField(idx, { value: e.target.value })}
                       placeholder="Значение"
-                      className="flex-1 px-2.5 py-1.5 bg-slate-900 border border-slate-700/70 rounded-lg text-xs text-white font-mono"
+                      className="flex-1 px-2.5 py-1.5 bg-zinc-950 border border-zinc-700/70 rounded-lg text-xs text-white font-mono"
                     />
                     <button
                       type="button"
                       onClick={() => handleUpdateField(idx, { isSecret: !field.isSecret })}
                       className={`p-1.5 rounded-lg border text-xs ${
                         field.isSecret
-                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                          : 'bg-slate-800 border-slate-700 text-slate-400'
+                          ? 'bg-white text-black border-white'
+                          : 'bg-zinc-800 border-zinc-700 text-zinc-400'
                       }`}
                       title={field.isSecret ? 'Скрытое поле' : 'Открытое поле'}
                     >
@@ -428,7 +471,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleRemoveField(idx)}
-                      className="p-1.5 text-slate-500 hover:text-red-400"
+                      className="p-1.5 text-zinc-500 hover:text-white"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -440,37 +483,37 @@ export const ItemModal: React.FC<ItemModalProps> = ({
 
           {/* Tags */}
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">
+            <label className="block text-xs font-medium text-zinc-300 mb-1">
               Теги (через запятую)
             </label>
             <input
               type="text"
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="работа, почта, 2FA"
-              className="w-full px-3.5 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-xs focus:outline-none focus:border-emerald-500"
+              placeholder="работа, почта, крипта, ledger"
+              className="w-full px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-white"
             />
           </div>
         </form>
 
         {/* Footer Actions */}
-        <div className="pt-4 border-t border-slate-800 flex items-center justify-between flex-shrink-0">
+        <div className="pt-4 border-t border-zinc-800 flex items-center justify-between flex-shrink-0">
           <div>
             {!isNew && onDelete && (
               confirmDelete ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-red-400">Удалить?</span>
+                  <span className="text-xs text-zinc-400">Удалить?</span>
                   <button
                     type="button"
                     onClick={handleDelete}
-                    className="px-2.5 py-1.5 bg-red-500/20 border border-red-500/40 text-red-400 rounded-lg text-xs hover:bg-red-500/30 font-medium"
+                    className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-600 text-white rounded-lg text-xs hover:bg-zinc-800 font-medium"
                   >
                     Да, удалить
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(false)}
-                    className="px-2 py-1.5 text-xs text-slate-400 hover:text-slate-200"
+                    className="px-2 py-1.5 text-xs text-zinc-400 hover:text-white"
                   >
                     Отмена
                   </button>
@@ -479,7 +522,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(true)}
-                  className="p-2 text-slate-400 hover:text-red-400 transition-colors flex items-center gap-1.5 text-xs"
+                  className="p-2 text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5 text-xs"
                 >
                   <Trash2 className="w-4 h-4" />
                   Удалить
@@ -492,7 +535,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-xs font-medium transition-colors"
             >
               Отмена
             </button>
@@ -500,7 +543,7 @@ export const ItemModal: React.FC<ItemModalProps> = ({
               type="submit"
               form="vault-item-form"
               disabled={isSaving || !title.trim()}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-semibold text-xs shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs transition-all disabled:opacity-40"
             >
               {isSaving ? 'Сохранение...' : isNew ? 'Создать запись' : 'Сохранить'}
             </button>

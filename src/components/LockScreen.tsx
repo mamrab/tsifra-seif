@@ -1,13 +1,33 @@
 import React, { useState } from 'react';
-import { Shield, Lock, Key, Fingerprint, Eye, EyeOff, AlertTriangle, CheckCircle2, Sparkles } from 'lucide-react';
+import {
+  Shield,
+  Lock,
+  Key,
+  Fingerprint,
+  Eye,
+  EyeOff,
+  AlertTriangle,
+  CheckCircle2,
+  Database,
+  ArrowRightLeft,
+  HelpCircle,
+  Sparkles,
+} from 'lucide-react';
 import { vaultApi } from '../services/vaultApi';
 
 interface LockScreenProps {
   isInitialized: boolean;
+  currentDatabase?: string;
   onUnlocked: () => void;
+  onOpenDatabaseSwitcher?: () => void;
 }
 
-export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocked }) => {
+export const LockScreen: React.FC<LockScreenProps> = ({
+  isInitialized,
+  currentDatabase = 'Основная',
+  onUnlocked,
+  onOpenDatabaseSwitcher,
+}) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -15,6 +35,7 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
   const [isLoading, setIsLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [usePinPad, setUsePinPad] = useState(false);
+  const [showForgotHint, setShowForgotHint] = useState(false);
 
   const handleUnlock = async (passToUse?: string) => {
     const finalPass = passToUse !== undefined ? passToUse : password;
@@ -32,6 +53,9 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
     } catch (err: unknown) {
       setFailedAttempts((prev) => prev + 1);
       setError(err instanceof Error ? err.message : 'Неверный мастер-пароль или PIN');
+      if (failedAttempts >= 1) {
+        setShowForgotHint(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -68,12 +92,11 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
     setIsLoading(true);
     setError(null);
     try {
-      // Biometric simulation / native trigger
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 300));
       await vaultApi.unlockVault(password || '1234');
       onUnlocked();
     } catch {
-      setError('Биометрия не подтверждена или требуется ввести пароль');
+      setError('Биометрия не подтверждена, введите пароль или PIN');
     } finally {
       setIsLoading(false);
     }
@@ -84,7 +107,6 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
     const newPass = password + digit;
     setPassword(newPass);
     if (isInitialized && newPass.length >= 4) {
-      // Auto attempt on 4-6 digits if purely numeric
       if (/^\d{4,6}$/.test(newPass)) {
         handleUnlock(newPass);
       }
@@ -92,49 +114,58 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center bg-[#07090e] px-4 overflow-hidden">
-      {/* Background ambient lighting */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="relative z-10 w-full max-w-md p-8 rounded-3xl bg-slate-900/80 backdrop-blur-2xl border border-slate-800/80 shadow-2xl shadow-black/80">
-        {/* App Logo & Shield */}
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className="relative mb-4 flex items-center justify-center">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-teal-400/20 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10">
-              <Shield className="w-10 h-10 text-emerald-400" />
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-black px-4 overflow-hidden select-none">
+      <div className="relative z-10 w-full max-w-md p-8 rounded-3xl bg-zinc-950 border border-zinc-800 shadow-2xl shadow-black animate-scale-in">
+        {/* App Logo & Monochrome Shield */}
+        <div className="flex flex-col items-center text-center mb-6">
+          <div className="relative mb-3 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center">
+              <Shield className="w-8 h-8 text-white" />
             </div>
-            <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center">
-              <Lock className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-black border border-zinc-700 flex items-center justify-center">
+              <Lock className="w-3 h-3 text-white" />
             </div>
           </div>
 
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
             Цифра-Сейф
-            <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+            <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-800">
               AES-256
             </span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            {isInitialized
-              ? 'Хранилище зашифровано. Введите PIN или пароль'
-              : 'Создание локального зашифрованного хранилища'}
-          </p>
+
+          {/* Active Database Badge & Switcher */}
+          <div className="mt-2 flex items-center gap-2">
+            <div className="px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-400 flex items-center gap-1.5 font-mono">
+              <Database className="w-3 h-3 text-zinc-300" />
+              <span>База: <strong className="text-white font-medium">{currentDatabase}</strong></span>
+            </div>
+            {onOpenDatabaseSwitcher && (
+              <button
+                type="button"
+                onClick={onOpenDatabaseSwitcher}
+                className="p-1 text-zinc-500 hover:text-white transition-colors"
+                title="Сменить базу данных"
+              >
+                <ArrowRightLeft className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
         {error && (
-          <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3 text-red-300 text-sm">
-            <AlertTriangle className="w-5 h-5 flex-shrink-0 text-red-400 mt-0.5" />
+          <div className="mb-4 p-3 rounded-xl bg-zinc-900 border border-zinc-700 flex items-start gap-2.5 text-zinc-300 text-xs animate-fade-in">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0 text-white mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         {isInitialized ? (
           /* UNLOCK FORM */
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div className="relative">
               <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-medium text-slate-300">
+                <label className="text-xs font-medium text-zinc-400">
                   {usePinPad ? 'Введите PIN' : 'Мастер-пароль / PIN'}
                 </label>
                 <button
@@ -144,9 +175,9 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
                     setPassword('');
                     setError(null);
                   }}
-                  className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                  className="text-xs text-white hover:underline transition-colors"
                 >
-                  {usePinPad ? 'Ввести пароль' : 'Открыть PIN-клавиатуру'}
+                  {usePinPad ? 'Ввести пароль' : 'PIN-клавиатура'}
                 </button>
               </div>
 
@@ -157,29 +188,29 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
                   placeholder={usePinPad ? '••••' : 'Введите мастер-пароль...'}
-                  className="w-full px-4 py-3.5 bg-slate-950/70 border border-slate-700/70 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-center tracking-widest font-mono text-lg transition-all"
+                  className="w-full px-4 py-3 bg-black border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-white text-center tracking-widest font-mono text-base transition-all"
                   autoFocus
                 />
                 {!usePinPad && (
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 )}
               </div>
             </div>
 
             {usePinPad && (
-              <div className="grid grid-cols-3 gap-3 py-2">
+              <div className="grid grid-cols-3 gap-2 py-1 animate-scale-in">
                 {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
                   <button
                     key={digit}
                     type="button"
                     onClick={() => handlePinDigit(digit)}
-                    className="h-14 rounded-2xl bg-slate-800/60 hover:bg-slate-700/70 active:bg-emerald-500/20 active:scale-95 border border-slate-700/50 text-xl font-semibold text-white transition-all shadow"
+                    className="h-11 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 active:scale-95 border border-zinc-800 text-base font-semibold text-white transition-all"
                   >
                     {digit}
                   </button>
@@ -187,37 +218,37 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
                 <button
                   type="button"
                   onClick={() => setPassword('')}
-                  className="h-14 rounded-2xl bg-slate-800/40 hover:bg-slate-800 text-xs font-medium text-slate-400 transition-colors"
+                  className="h-11 rounded-xl bg-zinc-950 hover:bg-zinc-900 text-xs font-medium text-zinc-400 transition-colors"
                 >
-                  Очистить
+                  Сброс
                 </button>
                 <button
                   key="0"
                   type="button"
                   onClick={() => handlePinDigit('0')}
-                  className="h-14 rounded-2xl bg-slate-800/60 hover:bg-slate-700/70 active:bg-emerald-500/20 active:scale-95 border border-slate-700/50 text-xl font-semibold text-white transition-all shadow"
+                  className="h-11 rounded-xl bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-700 active:scale-95 border border-zinc-800 text-base font-semibold text-white transition-all"
                 >
                   0
                 </button>
                 <button
                   type="button"
                   onClick={() => setPassword((prev) => prev.slice(0, -1))}
-                  className="h-14 rounded-2xl bg-slate-800/40 hover:bg-slate-800 text-xs font-medium text-slate-400 transition-colors"
+                  className="h-11 rounded-xl bg-zinc-950 hover:bg-zinc-900 text-xs font-medium text-zinc-400 transition-colors"
                 >
                   ⌫
                 </button>
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-2.5 pt-1">
               <button
                 type="button"
                 onClick={() => handleUnlock()}
                 disabled={isLoading}
-                className="flex-1 py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-semibold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="flex-1 py-3 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs transition-all active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <Key className="w-4 h-4" />
@@ -230,24 +261,51 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
                 type="button"
                 onClick={handleBiometricUnlock}
                 disabled={isLoading}
-                title="Биометрический вход (Touch ID / Face ID / Windows Hello)"
-                className="w-14 py-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700 text-emerald-400 flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                title="Биометрический вход"
+                className="w-12 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white flex items-center justify-center transition-all active:scale-95"
               >
-                <Fingerprint className="w-6 h-6" />
+                <Fingerprint className="w-5 h-5" />
               </button>
             </div>
 
+            {/* Forgotten Password Hint Toggle */}
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={() => setShowForgotHint(!showForgotHint)}
+                className="text-xs text-zinc-400 hover:text-white flex items-center justify-center gap-1.5 mx-auto transition-colors"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>Забыли пароль или PIN?</span>
+              </button>
+
+              {showForgotHint && (
+                <div className="mt-2.5 p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-left text-[11px] text-zinc-300 space-y-1.5 animate-scale-in">
+                  <div className="flex items-center gap-1 text-white font-medium">
+                    <Sparkles className="w-3.5 h-3.5 text-white" />
+                    <span>Подсказка для доступа:</span>
+                  </div>
+                  <p className="text-zinc-400 leading-relaxed">
+                    • Базовый демо-PIN для основной базы: <strong className="text-white font-mono">1234</strong>.
+                  </p>
+                  <p className="text-zinc-400 leading-relaxed">
+                    • Если вы создавали базу сами, используйте заданный мастер-пароль. Вы также можете переключить базу на другую или создать новую через иконку <strong className="text-white">База</strong> вверху.
+                  </p>
+                </div>
+              )}
+            </div>
+
             {failedAttempts > 0 && (
-              <p className="text-center text-xs text-slate-500">
+              <p className="text-center text-xs text-zinc-500 font-mono pt-1">
                 Неудачных попыток: {failedAttempts}
               </p>
             )}
           </div>
         ) : (
           /* INITIAL SETUP FORM */
-          <form onSubmit={handleInitialize} className="space-y-5">
+          <form onSubmit={handleInitialize} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium text-zinc-300 mb-1.5">
                 Придумайте мастер-пароль или PIN
               </label>
               <div className="relative">
@@ -256,13 +314,13 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Минимум 4 цифры или 8 символов"
-                  className="w-full px-4 py-3 bg-slate-950/70 border border-slate-700/70 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono text-sm"
+                  className="w-full px-3.5 py-2.5 bg-black border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-white font-mono text-xs"
                   autoFocus
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -270,7 +328,7 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium text-zinc-300 mb-1.5">
                 Повторите пароль
               </label>
               <input
@@ -278,43 +336,39 @@ export const LockScreen: React.FC<LockScreenProps> = ({ isInitialized, onUnlocke
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Подтверждение"
-                className="w-full px-4 py-3 bg-slate-950/70 border border-slate-700/70 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono text-sm"
+                className="w-full px-3.5 py-2.5 bg-black border border-zinc-800 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-white font-mono text-xs"
               />
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-800/40 border border-slate-800 text-xs text-slate-400 space-y-1.5">
-              <div className="flex items-center gap-2 text-emerald-400 font-medium">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Zero-Knowledge защита</span>
+            <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 space-y-1">
+              <div className="flex items-center gap-1.5 text-white font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                <span>Zero-Knowledge безопасность</span>
               </div>
-              <p>
-                Мастер-ключ вычисляется через <b>Argon2id</b> и никогда не сохраняется в открытом виде.
-                Если вы забудете пароль, восстановить доступ будет невозможно.
+              <p className="text-[11px] leading-relaxed">
+                Мастер-ключ вычисляется локально через <b>Argon2id</b> и никогда не передается по сети.
               </p>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-semibold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs transition-all flex items-center justify-center gap-2"
             >
               {isLoading ? (
-                <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
               ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  Создать сейф
-                </>
+                'Создать сейф'
               )}
             </button>
           </form>
         )}
 
-        <div className="mt-8 pt-6 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500">
-          <span>Tauri 2 + Rust + React</span>
-          <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Автономно & Локально
+        <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-500">
+          <span>Локальная БД • Цифра-Сейф</span>
+          <span className="flex items-center gap-1 font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+            100% Локально
           </span>
         </div>
       </div>

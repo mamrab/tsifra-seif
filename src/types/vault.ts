@@ -1,4 +1,23 @@
-export type VaultItemType = 'password' | 'secureNote' | 'paymentCard' | 'serverKey' | 'document';
+export type VaultItemType =
+  | 'password'
+  | 'secureNote'
+  | 'paymentCard'
+  | 'serverKey'
+  | 'document'
+  | 'cryptoWallet';
+
+export interface CryptoWalletData {
+  network: string; // e.g. "Bitcoin", "Ethereum (EVM)", "Solana", "TON", "Tron", "Cosmos"
+  wordCount: 12 | 18 | 24;
+  words: string[];
+  privateKey?: string; // Hex, Base58 or raw secret key
+  address?: string;
+  derivationPath?: string;
+  passphrase?: string; // 25th word / secret passphrase
+  rpcUrl?: string; // Custom RPC Endpoint
+  chainId?: string; // Network Chain ID
+  walletApp?: string; // MetaMask, Phantom, Ledger, etc.
+}
 
 export interface CustomField {
   id: string;
@@ -19,6 +38,7 @@ export interface VaultItem {
   tags: string[];
   favorite: boolean;
   customFields: CustomField[];
+  cryptoData?: CryptoWalletData;
   createdAt: number;
   updatedAt: number;
 }
@@ -31,6 +51,14 @@ export interface VaultSettings {
   theme: string;
 }
 
+export interface DatabaseInfo {
+  name: string;
+  filename: string;
+  sizeBytes: number;
+  isCurrent: boolean;
+  updatedAt: number;
+}
+
 export interface VaultStatus {
   isInitialized: boolean;
   isUnlocked: boolean;
@@ -38,6 +66,7 @@ export interface VaultStatus {
   categories: string[];
   autoLockMinutes: number;
   biometricsEnabled: boolean;
+  currentDatabase: string;
   lastModified?: number;
 }
 

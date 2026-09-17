@@ -10,6 +10,18 @@ pub enum VaultItemType {
     PaymentCard,
     ServerKey,
     Document,
+    CryptoWallet,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct CryptoWalletData {
+    pub network: String,
+    pub word_count: usize,
+    pub words: Vec<String>,
+    pub address: Option<String>,
+    pub derivation_path: Option<String>,
+    pub passphrase: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -35,6 +47,7 @@ pub struct VaultItem {
     pub tags: Vec<String>,
     pub favorite: bool,
     pub custom_fields: Vec<CustomField>,
+    pub crypto_data: Option<CryptoWalletData>,
     pub created_at: i64,
     pub updated_at: i64,
 }
@@ -54,6 +67,7 @@ impl VaultItem {
             tags: Vec::new(),
             favorite: false,
             custom_fields: Vec::new(),
+            crypto_data: None,
             created_at: now,
             updated_at: now,
         }
@@ -77,7 +91,7 @@ impl Default for VaultSettings {
             lock_on_background: true,
             biometrics_enabled: false,
             clipboard_clear_seconds: 30,
-            theme: "dark".to_string(),
+            theme: "monochrome".to_string(),
         }
     }
 }
@@ -101,9 +115,10 @@ impl Default for VaultData {
             items: Vec::new(),
             categories: vec![
                 "Общие".to_string(),
-                "Соцсети".to_string(),
+                "Крипта".to_string(),
                 "Финансы".to_string(),
                 "Работа".to_string(),
+                "Соцсети".to_string(),
                 "Личное".to_string(),
             ],
             settings: VaultSettings::default(),
@@ -111,6 +126,16 @@ impl Default for VaultData {
             updated_at: now,
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct DatabaseInfo {
+    pub name: String,
+    pub filename: String,
+    pub size_bytes: u64,
+    pub is_current: bool,
+    pub updated_at: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -122,5 +147,6 @@ pub struct VaultStatus {
     pub categories: Vec<String>,
     pub auto_lock_minutes: u32,
     pub biometrics_enabled: bool,
+    pub current_database: String,
     pub last_modified: Option<i64>,
 }

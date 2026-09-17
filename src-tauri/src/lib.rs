@@ -43,7 +43,10 @@ pub fn run() {
             generate_password,
             export_vault_backup,
             import_vault_backup,
-            change_vault_password
+            change_vault_password,
+            list_local_databases,
+            switch_local_database,
+            create_local_database
         ])
         .run(tauri::generate_context!())
         .expect("error while running Tsifra-Seif application");

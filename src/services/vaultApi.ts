@@ -1,67 +1,132 @@
 import { invoke } from '@tauri-apps/api/core';
-import { GeneratedSecret, GeneratorConfig, VaultItem, VaultSettings, VaultStatus } from '../types/vault';
+import { DatabaseInfo, GeneratedSecret, GeneratorConfig, VaultItem, VaultSettings, VaultStatus } from '../types/vault';
+import { localDb } from './localDb';
 
 const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
 
-// Fallback in-memory storage for web browser preview when not inside Tauri desktop/mobile runner
-let mockInitialized = false;
-let mockUnlocked = false;
-let mockPassword = '';
-let mockItems: VaultItem[] = [
-  {
-    id: 'demo-1',
-    title: 'Основной Google Аккаунт',
-    itemType: 'password',
-    username: 'alex.developer@gmail.com',
-    password: 'G8#vK9$zL2!qR5@w',
-    url: 'https://accounts.google.com',
-    notes: 'Основная почта для двухфакторной аутентификации и рабочих сервисов.',
-    category: 'Общие',
-    tags: ['Google', 'Почта', '2FA'],
-    favorite: true,
-    customFields: [
-      { id: 'f-1', label: 'Резервный email', value: 'recovery@yandex.ru', isSecret: false },
-      { id: 'f-2', label: 'Кодовое слово', value: 'СеверныйВетер2026', isSecret: true },
-    ],
-    createdAt: Date.now() - 86400000 * 5,
-    updatedAt: Date.now() - 86400000 * 2,
-  },
-  {
-    id: 'demo-2',
-    title: 'Крипто-кошелек Seed Phrase',
-    itemType: 'secureNote',
-    notes: 'witch collapse practice feed shame open despair creek road again ice cheese\n\nНикому не передавать этот сид! Аппаратный Ledger.',
-    category: 'Финансы',
-    tags: ['Crypto', 'Ledger', 'Seed'],
-    favorite: true,
-    customFields: [],
-    createdAt: Date.now() - 86400000 * 10,
-    updatedAt: Date.now() - 86400000 * 1,
-  },
-  {
-    id: 'demo-3',
-    title: 'Корпоративный GitHub',
-    itemType: 'password',
-    username: 'alex-dev',
-    password: 'ghp_K992xLa9021vbm3489P10x99AazqQ',
-    url: 'https://github.com',
-    notes: 'Personal Access Token с правами repo и read:packages',
-    category: 'Работа',
-    tags: ['Dev', 'GitHub', 'Token'],
-    favorite: false,
-    customFields: [],
-    createdAt: Date.now() - 86400000 * 15,
-    updatedAt: Date.now() - 86400000 * 4,
-  }
+const PASSPHRASE_WORDS = [
+  'anchor', 'beacon', 'citadel', 'delta', 'ember', 'falcon', 'glacier', 'harbor', 'island',
+  'jungle', 'karma', 'lagoon', 'matrix', 'nexus', 'orbit', 'phoenix', 'quantum', 'radar',
+  'shadow', 'timber', 'ultra', 'vortex', 'whisper', 'zenith', 'crystal', 'shield', 'cipher',
+  'aurora', 'comet', 'nebula', 'pulsar', 'quasar', 'stellar', 'titan', 'voyage', 'zen',
+  'albatross', 'breeze', 'cascade', 'dune', 'echo', 'frost', 'granite', 'horizon', 'infinity',
+  'journey', 'keystone', 'lunar', 'mirage', 'nomad', 'oasis', 'pinnacle', 'quartz', 'rift',
+  'summit', 'tundra', 'uranium', 'velocity', 'wave', 'apex', 'blizzard', 'canyon', 'drift',
+  'element', 'forge', 'gravity', 'halo', 'iron', 'jupiter', 'kinetic', 'lightning', 'meteor',
+  'neutron', 'obsidian', 'plasma', 'quest', 'radiant', 'strata', 'thunder', 'unity', 'vector'
 ];
 
-let mockSettings: VaultSettings = {
-  autoLockMinutes: 5,
-  lockOnBackground: true,
-  biometricsEnabled: true,
-  clipboardClearSeconds: 30,
-  theme: 'dark'
-};
+function generateSecretLocal(config: GeneratorConfig): GeneratedSecret {
+  const getRandom = (max: number) => {
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+      const arr = new Uint32Array(1);
+      window.crypto.getRandomValues(arr);
+      return arr[0] % max;
+    }
+    return Math.floor(Math.random() * max);
+  };
+
+  if (config.mode === 'pin') {
+    const len = Math.max(4, Math.min(16, config.length || 6));
+    const digits = '0123456789';
+    let val = '';
+    for (let i = 0; i < len; i++) {
+      val += digits[getRandom(digits.length)];
+    }
+    const entropy = Math.round(len * Math.log2(10) * 10) / 10;
+    const score = entropy < 25 ? 1 : entropy < 40 ? 2 : 3;
+    const strengthLevel = entropy < 25 ? 'weak' : entropy < 40 ? 'fair' : 'good';
+    return { value: val, entropy, strengthLevel, score };
+  }
+
+  if (config.mode === 'passphrase') {
+    const count = Math.max(3, Math.min(10, config.wordCount || 4));
+    const sep = config.separator !== undefined ? config.separator : '-';
+    const chosen: string[] = [];
+    for (let i = 0; i < count; i++) {
+      chosen.push(PASSPHRASE_WORDS[getRandom(PASSPHRASE_WORDS.length)]);
+    }
+    const val = chosen.join(sep);
+    const entropy = Math.round(count * Math.log2(PASSPHRASE_WORDS.length) * 10) / 10;
+    let score = 3;
+    let strengthLevel: GeneratedSecret['strengthLevel'] = 'strong';
+    if (entropy < 40) { score = 2; strengthLevel = 'fair'; }
+    else if (entropy >= 80) { score = 4; strengthLevel = 'excellent'; }
+    return { value: val, entropy, strengthLevel, score };
+  }
+
+  // Password mode
+  const len = Math.max(6, Math.min(64, config.length || 16));
+  const upperPool = config.excludeAmbiguous ? 'ABCDEFGHJKLMNPQRSTUVWXYZ' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lowerPool = config.excludeAmbiguous ? 'abcdefghijkmnopqrstuvwxyz' : 'abcdefghijklmnopqrstuvwxyz';
+  const digitPool = config.excludeAmbiguous ? '23456789' : '0123456789';
+  const symbolPool = '!@#$%^&*()-_=+[]{}|;:,.<>?';
+
+  let pool = '';
+  const requiredChars: string[] = [];
+
+  if (config.includeLowercase) {
+    pool += lowerPool;
+    requiredChars.push(lowerPool[getRandom(lowerPool.length)]);
+  }
+  if (config.includeUppercase) {
+    pool += upperPool;
+    requiredChars.push(upperPool[getRandom(upperPool.length)]);
+  }
+  if (config.includeDigits) {
+    pool += digitPool;
+    requiredChars.push(digitPool[getRandom(digitPool.length)]);
+  }
+  if (config.includeSymbols) {
+    pool += symbolPool;
+    requiredChars.push(symbolPool[getRandom(symbolPool.length)]);
+  }
+
+  // Fallback if none selected
+  if (!pool) {
+    pool = lowerPool + digitPool;
+    requiredChars.push(lowerPool[getRandom(lowerPool.length)]);
+    requiredChars.push(digitPool[getRandom(digitPool.length)]);
+  }
+
+  const chars: string[] = [...requiredChars];
+  while (chars.length < len) {
+    chars.push(pool[getRandom(pool.length)]);
+  }
+
+  // Fisher-Yates shuffle
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = getRandom(i + 1);
+    const temp = chars[i];
+    chars[i] = chars[j];
+    chars[j] = temp;
+  }
+
+  const val = chars.join('');
+  const poolSize = pool.length;
+  const entropy = Math.round(len * Math.log2(poolSize) * 10) / 10;
+
+  let score = 3;
+  let strengthLevel: GeneratedSecret['strengthLevel'] = 'strong';
+  if (entropy < 30) {
+    score = 0;
+    strengthLevel = 'weak';
+  } else if (entropy < 50) {
+    score = 1;
+    strengthLevel = 'fair';
+  } else if (entropy < 70) {
+    score = 2;
+    strengthLevel = 'good';
+  } else if (entropy < 90) {
+    score = 3;
+    strengthLevel = 'strong';
+  } else {
+    score = 4;
+    strengthLevel = 'excellent';
+  }
+
+  return { value: val, entropy, strengthLevel, score };
+}
 
 export const vaultApi = {
   isNative(): boolean {
@@ -72,14 +137,16 @@ export const vaultApi = {
     if (isTauri) {
       return await invoke<VaultStatus>('get_vault_status');
     }
+    const current = localDb.getActiveDb();
     return {
-      isInitialized: mockInitialized,
-      isUnlocked: mockUnlocked,
-      itemCount: mockUnlocked ? mockItems.length : 0,
-      categories: ['Общие', 'Соцсети', 'Финансы', 'Работа', 'Личное'],
-      autoLockMinutes: mockSettings.autoLockMinutes,
-      biometricsEnabled: mockSettings.biometricsEnabled,
-      lastModified: Date.now(),
+      isInitialized: current.isInitialized,
+      isUnlocked: current.isUnlocked,
+      itemCount: current.isUnlocked ? current.items.length : 0,
+      categories: ['Общие', 'Крипта', 'Финансы', 'Работа', 'Соцсети', 'Личное'],
+      autoLockMinutes: current.settings.autoLockMinutes,
+      biometricsEnabled: current.settings.biometricsEnabled,
+      currentDatabase: current.name,
+      lastModified: current.updatedAt,
     };
   },
 
@@ -87,9 +154,7 @@ export const vaultApi = {
     if (isTauri) {
       return await invoke<VaultStatus>('init_vault', { password });
     }
-    mockInitialized = true;
-    mockUnlocked = true;
-    mockPassword = password;
+    localDb.initVault(password);
     return this.getStatus();
   },
 
@@ -97,11 +162,11 @@ export const vaultApi = {
     if (isTauri) {
       return await invoke<VaultStatus>('unlock_vault', { password });
     }
-    if (password === mockPassword || password === '1234' || password === 'admin') {
-      mockUnlocked = true;
-      return this.getStatus();
+    const success = localDb.unlock(password);
+    if (!success) {
+      throw new Error('Неверный пароль или PIN');
     }
-    throw new Error('Неверный пароль или PIN');
+    return this.getStatus();
   },
 
   async lockVault(): Promise<void> {
@@ -109,31 +174,21 @@ export const vaultApi = {
       await invoke('lock_vault');
       return;
     }
-    mockUnlocked = false;
+    localDb.lock();
   },
 
   async getItems(): Promise<VaultItem[]> {
     if (isTauri) {
       return await invoke<VaultItem[]>('get_vault_items');
     }
-    if (!mockUnlocked) throw new Error('Сейф заблокирован');
-    return [...mockItems];
+    return localDb.getItems();
   },
 
   async saveItem(item: VaultItem): Promise<VaultItem> {
     if (isTauri) {
       return await invoke<VaultItem>('save_vault_item', { item });
     }
-    if (!mockUnlocked) throw new Error('Сейф заблокирован');
-    const existingIndex = mockItems.findIndex((it) => it.id === item.id);
-    const now = Date.now();
-    const updated = { ...item, updatedAt: now };
-    if (existingIndex >= 0) {
-      mockItems[existingIndex] = updated;
-    } else {
-      mockItems.push(updated);
-    }
-    return updated;
+    return localDb.saveItem(item);
   },
 
   async deleteItem(id: string): Promise<void> {
@@ -141,8 +196,7 @@ export const vaultApi = {
       await invoke('delete_vault_item', { id });
       return;
     }
-    if (!mockUnlocked) throw new Error('Сейф заблокирован');
-    mockItems = mockItems.filter((it) => it.id !== id);
+    localDb.deleteItem(id);
   },
 
   async updateSettings(settings: VaultSettings): Promise<void> {
@@ -150,33 +204,25 @@ export const vaultApi = {
       await invoke('update_vault_settings', { settings });
       return;
     }
-    mockSettings = { ...settings };
+    localDb.updateSettings(settings);
   },
 
   async generatePassword(config: GeneratorConfig): Promise<GeneratedSecret> {
     if (isTauri) {
-      return await invoke<GeneratedSecret>('generate_password', { config });
+      try {
+        return await invoke<GeneratedSecret>('generate_password', { config });
+      } catch (err) {
+        console.warn('Native generate_password failed, using client fallback:', err);
+      }
     }
-    // Web fallback calculation
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
-    let res = '';
-    for (let i = 0; i < config.length; i++) {
-      res += charset.charAt(Math.floor(Math.random() * charset.length));
-    }
-    const entropy = Math.round(config.length * Math.log2(charset.length) * 10) / 10;
-    return {
-      value: res,
-      entropy,
-      strengthLevel: entropy > 70 ? 'excellent' : 'strong',
-      score: 4,
-    };
+    return generateSecretLocal(config);
   },
 
   async exportBackup(): Promise<string> {
     if (isTauri) {
       return await invoke<string>('export_vault_backup');
     }
-    return btoa(JSON.stringify(mockItems));
+    return localDb.exportBackup();
   },
 
   async importBackup(backupBase64: string, password: string): Promise<VaultStatus> {
@@ -186,14 +232,8 @@ export const vaultApi = {
         password,
       });
     }
-    try {
-      const decoded = atob(backupBase64);
-      mockItems = JSON.parse(decoded);
-      mockUnlocked = true;
-      return this.getStatus();
-    } catch {
-      throw new Error('Не удалось прочитать файл резервной копии');
-    }
+    localDb.importBackup(backupBase64, password);
+    return this.getStatus();
   },
 
   async changePassword(oldPassword: string, newPassword: string): Promise<void> {
@@ -201,9 +241,29 @@ export const vaultApi = {
       await invoke('change_vault_password', { oldPassword, newPassword });
       return;
     }
-    if (oldPassword !== mockPassword && oldPassword !== '1234') {
-      throw new Error('Старый пароль указан неверно');
-    }
-    mockPassword = newPassword;
+    localDb.changePassword(oldPassword, newPassword);
   },
+
+  async listDatabases(): Promise<DatabaseInfo[]> {
+    if (isTauri) {
+      return await invoke<DatabaseInfo[]>('list_local_databases');
+    }
+    return localDb.listDatabases();
+  },
+
+  async switchDatabase(name: string): Promise<VaultStatus> {
+    if (isTauri) {
+      return await invoke<VaultStatus>('switch_local_database', { name });
+    }
+    localDb.switchDatabase(name);
+    return this.getStatus();
+  },
+
+  async createDatabase(name: string, password: string): Promise<VaultStatus> {
+    if (isTauri) {
+      return await invoke<VaultStatus>('create_local_database', { name, password });
+    }
+    localDb.createDatabase(name, password);
+    return this.getStatus();
+  }
 };

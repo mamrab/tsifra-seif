@@ -4,7 +4,7 @@ use base64::prelude::*;
 
 use crate::crypto::generator::{generate_secret, GeneratedSecret, GeneratorConfig};
 use crate::vault::manager::VaultManager;
-use crate::vault::models::{VaultItem, VaultSettings, VaultStatus};
+use crate::vault::models::{DatabaseInfo, VaultItem, VaultSettings, VaultStatus};
 
 #[tauri::command]
 pub fn get_vault_status(manager: State<'_, Arc<VaultManager>>) -> Result<VaultStatus, String> {
@@ -128,3 +128,38 @@ pub fn change_vault_password(
         .change_master_password(&old_password, &new_password)
         .map_err(|e| format!("Ошибка смены мастер-пароля: {}", e))
 }
+
+#[tauri::command]
+pub fn list_local_databases(manager: State<'_, Arc<VaultManager>>) -> Result<Vec<DatabaseInfo>, String> {
+    manager
+        .list_databases()
+        .map_err(|e| format!("Ошибка получения списка баз данных: {}", e))
+}
+
+#[tauri::command]
+pub fn switch_local_database(
+    name: String,
+    manager: State<'_, Arc<VaultManager>>,
+) -> Result<VaultStatus, String> {
+    manager
+        .switch_database(&name)
+        .map_err(|e| format!("Ошибка переключения базы данных: {}", e))
+}
+
+#[tauri::command]
+pub fn create_local_database(
+    name: String,
+    password: String,
+    manager: State<'_, Arc<VaultManager>>,
+) -> Result<VaultStatus, String> {
+    if name.trim().is_empty() {
+        return Err("Имя базы данных не может быть пустым".to_string());
+    }
+    if password.trim().is_empty() {
+        return Err("Пароль не может быть пустым".to_string());
+    }
+    manager
+        .create_database(&name, &password)
+        .map_err(|e| format!("Ошибка создания базы данных: {}", e))
+}
+
