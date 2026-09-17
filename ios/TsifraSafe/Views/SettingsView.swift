@@ -36,13 +36,13 @@ public struct SettingsView: View {
                         VStack(spacing: 14) {
                             HStack {
                                 Image(systemName: BiometricsService.shared.biometricType.systemIcon)
-                                    .foregroundColor(.emeraldAccent)
+                                    .foregroundColor(.white)
                                     .frame(width: 24)
                                 Text(BiometricsService.shared.biometricType.title)
                                     .foregroundColor(.white)
                                 Spacer()
                                 Toggle("", isOn: $biometricsEnabled)
-                                    .tint(.emeraldAccent)
+                                    .tint(.white)
                                     .onChange(of: biometricsEnabled) { _ in saveSettings() }
                             }
 
@@ -50,13 +50,13 @@ public struct SettingsView: View {
 
                             HStack {
                                 Image(systemName: "app.badge.checkmark")
-                                    .foregroundColor(.cyanAccent)
+                                    .foregroundColor(.white.opacity(0.85))
                                     .frame(width: 24)
                                 Text("Блокировка при сворачивании")
                                     .foregroundColor(.white)
                                 Spacer()
                                 Toggle("", isOn: $lockOnBackground)
-                                    .tint(.emeraldAccent)
+                                    .tint(.white)
                                     .onChange(of: lockOnBackground) { _ in saveSettings() }
                             }
 
@@ -64,7 +64,7 @@ public struct SettingsView: View {
 
                             HStack {
                                 Image(systemName: "clock.fill")
-                                    .foregroundColor(.purpleAccent)
+                                    .foregroundColor(.white.opacity(0.7))
                                     .frame(width: 24)
                                 Text("Таймер автоблокировки")
                                     .foregroundColor(.white)
@@ -76,7 +76,7 @@ public struct SettingsView: View {
                                     Text("Выкл").tag(0)
                                 }
                                 .pickerStyle(.menu)
-                                .tint(.emeraldAccent)
+                                .tint(.white)
                                 .onChange(of: autoLockMinutes) { _ in saveSettings() }
                             }
                         }
@@ -93,7 +93,7 @@ public struct SettingsView: View {
                             Button(action: exportBackup) {
                                 HStack {
                                     Image(systemName: "square.and.arrow.up.fill")
-                                        .foregroundColor(.emeraldAccent)
+                                        .foregroundColor(.white)
                                         .frame(width: 24)
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text("Экспорт зашифрованного сейфа")
@@ -115,7 +115,7 @@ public struct SettingsView: View {
                             Button(action: { isFileImporterPresented = true }) {
                                 HStack {
                                     Image(systemName: "square.and.arrow.down.fill")
-                                        .foregroundColor(.cyanAccent)
+                                        .foregroundColor(.white.opacity(0.85))
                                         .frame(width: 24)
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text("Импорт из файла .tsvault")
@@ -140,12 +140,12 @@ public struct SettingsView: View {
                             Text("Цифра-Сейф для iOS")
                                 .font(.system(size: 14, weight: .bold))
                                 .foregroundColor(.white)
-                            Text("Версия 1.0 • Apple CryptoKit & Liquid Glass")
+                            Text("Версия 1.0 • Apple CryptoKit & Pure Monochrome")
                                 .font(.system(size: 11))
                                 .foregroundColor(.white.opacity(0.5))
                             Text("100% Локально. Без серверов.")
                                 .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(.emeraldAccent)
+                                .foregroundColor(.white.opacity(0.8))
                         }
                         .frame(maxWidth: .infinity)
                         .padding(16)
@@ -159,7 +159,7 @@ public struct SettingsView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Готово") { dismiss() }
-                        .foregroundColor(.emeraldAccent)
+                        .foregroundColor(.white)
                 }
             }
             .sheet(isPresented: $isShareSheetPresented) {

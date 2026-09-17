@@ -43,7 +43,7 @@ public struct GeneratorSheet: View {
                     VStack(spacing: 12) {
                         Text(generated?.value ?? "...")
                             .font(.system(size: 18, weight: .bold, design: .monospaced))
-                            .foregroundColor(.emeraldAccent)
+                            .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                             .lineLimit(3)
                             .padding(.horizontal, 10)
@@ -73,88 +73,87 @@ public struct GeneratorSheet: View {
                                         .foregroundColor(.white)
                                     Spacer()
                                 }
-                                Slider(value: $length, in: 8...40, step: 1)
-                                    .tint(.emeraldAccent)
+                                Slider(value: $length, in: 8...48, step: 1)
+                                    .tint(.white)
                                     .onChange(of: length) { _ in regenerate() }
                             }
 
                             Divider().background(Color.white.opacity(0.1))
 
                             Toggle("Заглавные (A-Z)", isOn: $includeUpper)
-                                .tint(.emeraldAccent)
+                                .tint(.white)
                                 .onChange(of: includeUpper) { _ in regenerate() }
 
                             Toggle("Строчные (a-z)", isOn: $includeLower)
-                                .tint(.emeraldAccent)
+                                .tint(.white)
                                 .onChange(of: includeLower) { _ in regenerate() }
 
                             Toggle("Цифры (0-9)", isOn: $includeDigits)
-                                .tint(.emeraldAccent)
+                                .tint(.white)
                                 .onChange(of: includeDigits) { _ in regenerate() }
 
                             Toggle("Спецсимволы (!@#$)", isOn: $includeSymbols)
-                                .tint(.emeraldAccent)
+                                .tint(.white)
                                 .onChange(of: includeSymbols) { _ in regenerate() }
                         } else if mode == 1 {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Количество слов: \(Int(wordCount))")
                                     .font(.system(size: 13, weight: .medium))
                                     .foregroundColor(.white)
-                                Slider(value: $wordCount, in: 3...7, step: 1)
-                                    .tint(.emeraldAccent)
+                                Slider(value: $wordCount, in: 3...8, step: 1)
+                                    .tint(.white)
                                     .onChange(of: wordCount) { _ in regenerate() }
                             }
                         } else {
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("Длина PIN: \(Int(pinLength))")
+                                Text("Длина PIN: \(Int(pinLength)) цифр")
                                     .font(.system(size: 13, weight: .medium))
                                     .foregroundColor(.white)
                                 Slider(value: $pinLength, in: 4...12, step: 1)
-                                    .tint(.emeraldAccent)
+                                    .tint(.white)
                                     .onChange(of: pinLength) { _ in regenerate() }
                             }
                         }
                     }
                     .foregroundColor(.white)
-                    .font(.system(size: 14))
-                    .padding(18)
+                    .padding(16)
                     .liquidGlassCard(cornerRadius: 20)
 
                     Spacer()
 
-                    // Bottom Action Buttons
-                    HStack(spacing: 12) {
-                        Button(action: regenerate) {
-                            ZStack {
-                                Circle()
-                                    .fill(.ultraThinMaterial)
-                                    .frame(width: 52, height: 52)
-                                    .overlay(Circle().stroke(Color.white.opacity(0.15), lineWidth: 1))
-                                Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 18, weight: .semibold))
-                                    .foregroundColor(.white)
-                            }
-                        }
-
+                    // Action Buttons
+                    VStack(spacing: 10) {
                         if let onSelect = onSelect {
-                            LiquidGlassButton(title: "Использовать", systemIcon: "checkmark") {
+                            Button(action: {
                                 if let val = generated?.value {
                                     onSelect(val)
                                     dismiss()
                                 }
-                            }
-                        } else {
-                            LiquidGlassButton(title: isCopied ? "Скопировано!" : "Скопировать", systemIcon: isCopied ? "checkmark" : "doc.on.doc") {
-                                if let val = generated?.value {
-                                    #if canImport(UIKit)
-                                    UIPasteboard.general.string = val
-                                    #endif
-                                    isCopied = true
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                                        isCopied = false
-                                    }
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "checkmark.shield.fill")
+                                    Text("Использовать этот пароль")
                                 }
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(Color.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                             }
+                        }
+
+                        Button(action: copyToClipboard) {
+                            HStack(spacing: 8) {
+                                Image(systemName: isCopied ? "checkmark" : "doc.on.doc.fill")
+                                Text(isCopied ? "Скопировано в буфер" : "Скопировать пароль")
+                            }
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(onSelect == nil ? .black : .white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(onSelect == nil ? Color.white : Color(white: 0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         }
                     }
                 }
@@ -166,6 +165,12 @@ public struct GeneratorSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Закрыть") { dismiss() }
                         .foregroundColor(.white.opacity(0.8))
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: regenerate) {
+                        Image(systemName: "arrow.clockwise")
+                            .foregroundColor(.white)
+                    }
                 }
             }
             .onAppear {
@@ -180,18 +185,37 @@ public struct GeneratorSheet: View {
         impact.impactOccurred()
         #endif
 
-        if mode == 0 {
-            generated = PasswordGenerator.generatePassword(
+        switch mode {
+        case 0:
+            // Ensure at least one character set is selected
+            let u = includeUpper, l = includeLower, d = includeDigits, s = includeSymbols
+            let safeL = (!u && !l && !d && !s) ? true : l
+            generated = PasswordGenerator.shared.generate(
                 length: Int(length),
-                includeUppercase: includeUpper,
-                includeLowercase: includeLower,
-                includeDigits: includeDigits,
-                includeSymbols: includeSymbols
+                includeUppercase: u,
+                includeLowercase: safeL,
+                includeDigits: d,
+                includeSymbols: s
             )
-        } else if mode == 1 {
-            generated = PasswordGenerator.generatePassphrase(wordCount: Int(wordCount))
-        } else {
-            generated = PasswordGenerator.generatePin(length: Int(pinLength))
+        case 1:
+            generated = PasswordGenerator.shared.generatePassphrase(wordCount: Int(wordCount))
+        case 2:
+            generated = PasswordGenerator.shared.generatePin(length: Int(pinLength))
+        default:
+            break
+        }
+    }
+
+    private func copyToClipboard() {
+        guard let val = generated?.value else { return }
+        #if canImport(UIKit)
+        UIPasteboard.general.string = val
+        let notify = UINotificationFeedbackGenerator()
+        notify.notificationOccurred(.success)
+        #endif
+        isCopied = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            isCopied = false
         }
     }
 }

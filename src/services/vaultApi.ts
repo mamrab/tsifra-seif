@@ -177,6 +177,12 @@ export const vaultApi = {
     localDb.lock();
   },
 
+  async resetVault(newPassword?: string): Promise<void> {
+    if (!isTauri) {
+      localDb.resetActiveDb(newPassword);
+    }
+  },
+
   async getItems(): Promise<VaultItem[]> {
     if (isTauri) {
       return await invoke<VaultItem[]>('get_vault_items');

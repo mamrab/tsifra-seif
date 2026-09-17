@@ -2,6 +2,7 @@ import Foundation
 
 public enum VaultItemType: String, Codable, CaseIterable, Identifiable {
     case password = "password"
+    case cryptoWallet = "cryptoWallet"
     case secureNote = "secureNote"
     case paymentCard = "paymentCard"
     case serverKey = "serverKey"
@@ -11,6 +12,7 @@ public enum VaultItemType: String, Codable, CaseIterable, Identifiable {
     public var title: String {
         switch self {
         case .password: return "Пароль"
+        case .cryptoWallet: return "Крипто"
         case .secureNote: return "Заметка"
         case .paymentCard: return "Карта"
         case .serverKey: return "Ключ / API"
@@ -20,10 +22,48 @@ public enum VaultItemType: String, Codable, CaseIterable, Identifiable {
     public var systemIcon: String {
         switch self {
         case .password: return "key.fill"
+        case .cryptoWallet: return "bitcoinsign.circle.fill"
         case .secureNote: return "note.text"
         case .paymentCard: return "creditcard.fill"
         case .serverKey: return "server.rack"
         }
+    }
+}
+
+public struct CryptoWalletData: Codable, Equatable, Hashable {
+    public var network: String
+    public var wordCount: Int
+    public var words: [String]
+    public var privateKey: String?
+    public var address: String?
+    public var derivationPath: String?
+    public var passphrase: String?
+    public var rpcUrl: String?
+    public var chainId: String?
+    public var walletApp: String?
+
+    public init(
+        network: String = "Ethereum / EVM",
+        wordCount: Int = 12,
+        words: [String] = Array(repeating: "", count: 12),
+        privateKey: String? = nil,
+        address: String? = nil,
+        derivationPath: String? = "m/44'/60'/0'/0/0",
+        passphrase: String? = nil,
+        rpcUrl: String? = "https://eth.llamarpc.com",
+        chainId: String? = "1",
+        walletApp: String? = "MetaMask / Rabby"
+    ) {
+        self.network = network
+        self.wordCount = wordCount
+        self.words = words
+        self.privateKey = privateKey
+        self.address = address
+        self.derivationPath = derivationPath
+        self.passphrase = passphrase
+        self.rpcUrl = rpcUrl
+        self.chainId = chainId
+        self.walletApp = walletApp
     }
 }
 
@@ -53,6 +93,7 @@ public struct VaultItem: Identifiable, Codable, Equatable, Hashable {
     public var tags: [String]
     public var favorite: Bool
     public var customFields: [CustomField]
+    public var cryptoData: CryptoWalletData?
     public var createdAt: Date
     public var updatedAt: Date
 
@@ -68,6 +109,7 @@ public struct VaultItem: Identifiable, Codable, Equatable, Hashable {
         tags: [String] = [],
         favorite: Bool = false,
         customFields: [CustomField] = [],
+        cryptoData: CryptoWalletData? = nil,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -82,6 +124,7 @@ public struct VaultItem: Identifiable, Codable, Equatable, Hashable {
         self.tags = tags
         self.favorite = favorite
         self.customFields = customFields
+        self.cryptoData = cryptoData
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -109,9 +152,9 @@ public struct VaultData: Codable {
     public var updatedAt: Date
 
     public static let `default` = VaultData(
-        version: 1,
+        version: 2,
         items: [],
-        categories: ["Общие", "Соцсети", "Финансы", "Работа", "Личное"],
+        categories: ["Общие", "Крипта", "Финансы", "Работа", "Личное"],
         settings: .default,
         updatedAt: Date()
     )

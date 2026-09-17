@@ -4,98 +4,53 @@ import UIKit
 #endif
 
 public struct LiquidGlassBackground: View {
-    @State private var animateGradients = false
-
     public init() {}
 
     public var body: some View {
         ZStack {
-            // Deep base background
-            Color(red: 0.03, green: 0.04, blue: 0.07)
+            // Pure deep monochrome black
+            Color.black
                 .ignoresSafeArea()
 
-            // Glowing liquid orbs
+            // Subtle monochrome ambient dark shading (zero color gradients)
             GeometryReader { proxy in
                 ZStack {
                     Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [Color.emeraldAccent.opacity(0.35), Color.clear],
-                                center: .center,
-                                startRadius: 10,
-                                endRadius: proxy.size.width * 0.6
-                            )
-                        )
+                        .fill(Color.white.opacity(0.04))
                         .frame(width: proxy.size.width * 0.9, height: proxy.size.width * 0.9)
-                        .offset(x: animateGradients ? -50 : 30, y: animateGradients ? -60 : 40)
-                        .blur(radius: 50)
-
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [Color.cyanAccent.opacity(0.25), Color.clear],
-                                center: .center,
-                                startRadius: 10,
-                                endRadius: proxy.size.width * 0.55
-                            )
-                        )
-                        .frame(width: proxy.size.width * 0.8, height: proxy.size.width * 0.8)
-                        .offset(x: animateGradients ? 60 : -40, y: animateGradients ? 150 : 80)
+                        .offset(x: -30, y: -40)
                         .blur(radius: 60)
 
                     Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [Color.purpleAccent.opacity(0.18), Color.clear],
-                                center: .center,
-                                startRadius: 10,
-                                endRadius: proxy.size.width * 0.5
-                            )
-                        )
-                        .frame(width: proxy.size.width * 0.7, height: proxy.size.width * 0.7)
-                        .offset(x: animateGradients ? -30 : 50, y: animateGradients ? 300 : 250)
-                        .blur(radius: 50)
+                        .fill(Color.white.opacity(0.03))
+                        .frame(width: proxy.size.width * 0.8, height: proxy.size.width * 0.8)
+                        .offset(x: 50, y: 180)
+                        .blur(radius: 70)
                 }
             }
             .ignoresSafeArea()
-            .onAppear {
-                withAnimation(.easeInOut(duration: 8.0).repeatForever(autoreverses: true)) {
-                    animateGradients.toggle()
-                }
-            }
 
-            // Translucent glass dust overlay
+            // Ultra-thin dark glass blur overlay
             Rectangle()
-                .fill(.ultraThinMaterial.opacity(0.4))
+                .fill(.ultraThinMaterial.opacity(0.5))
                 .ignoresSafeArea()
         }
     }
 }
 
 public struct LiquidGlassCardModifier: ViewModifier {
-    var cornerRadius: CGFloat = 22
+    var cornerRadius: CGFloat = 20
 
     public func body(content: Content) -> some View {
         content
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.ultraThinMaterial)
+                    .fill(Color(red: 0.06, green: 0.06, blue: 0.07).opacity(0.85))
                     .overlay(
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(0.25),
-                                        Color.white.opacity(0.05),
-                                        Color.emeraldAccent.opacity(0.2)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1.2
-                            )
+                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
                     )
-                    .shadow(color: Color.black.opacity(0.4), radius: 20, x: 0, y: 10)
+                    .shadow(color: Color.black.opacity(0.5), radius: 16, x: 0, y: 6)
             )
     }
 }
@@ -130,27 +85,24 @@ public struct LiquidGlassButton: View {
             .foregroundColor(.black)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(
-                LinearGradient(
-                    colors: [Color.emeraldAccent, Color(red: 0.1, green: 0.85, blue: 0.7)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .shadow(color: Color.emeraldAccent.opacity(0.35), radius: 15, x: 0, y: 6)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: Color.white.opacity(0.1), radius: 10, x: 0, y: 4)
         }
     }
 }
 
 extension View {
-    public func liquidGlassCard(cornerRadius: CGFloat = 22) -> some View {
+    public func liquidGlassCard(cornerRadius: CGFloat = 20) -> some View {
         modifier(LiquidGlassCardModifier(cornerRadius: cornerRadius))
     }
 }
 
+// Monochrome accent tokens
 extension Color {
-    public static let emeraldAccent = Color(red: 0.15, green: 0.85, blue: 0.55)
-    public static let cyanAccent = Color(red: 0.1, green: 0.75, blue: 0.95)
-    public static let purpleAccent = Color(red: 0.6, green: 0.35, blue: 0.95)
+    public static let emeraldAccent = Color.white
+    public static let cyanAccent = Color.white.opacity(0.85)
+    public static let purpleAccent = Color.white.opacity(0.7)
+    public static let monoBorder = Color.white.opacity(0.12)
+    public static let monoSurface = Color(red: 0.08, green: 0.08, blue: 0.09)
 }

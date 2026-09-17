@@ -17,7 +17,7 @@ public struct TsifraSafeApp: App {
                 }
             }
             .preferredColorScheme(.dark)
-            .onChange(of: scenePhase) { _, newPhase in
+            .onChange(of: scenePhase) { newPhase in
                 if newPhase == .background && vaultService.vaultData.settings.lockOnBackground {
                     vaultService.lock()
                 }

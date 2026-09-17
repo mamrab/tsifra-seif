@@ -388,6 +388,16 @@ class LocalDatabaseManager {
       throw new Error(e instanceof Error ? e.message : 'Не удалось прочитать файл резервной копии');
     }
   }
+
+  public resetActiveDb(newPassword?: string): void {
+    const db = this.getActiveDb();
+    db.items = [...DEFAULT_ITEMS];
+    db.password = newPassword || '1234';
+    db.isUnlocked = true;
+    db.isInitialized = true;
+    db.updatedAt = Date.now();
+    this.persist();
+  }
 }
 
 export const localDb = new LocalDatabaseManager();
