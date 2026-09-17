@@ -1,0 +1,308 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000012C12345600000001 /* TsifraSafeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000012C12345600000001 /* TsifraSafeApp.swift */; };
+		A10000022C12345600000002 /* VaultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000022C12345600000002 /* VaultItem.swift */; };
+		A10000032C12345600000003 /* CryptoVaultService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000032C12345600000003 /* CryptoVaultService.swift */; };
+		A10000042C12345600000004 /* BiometricsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000042C12345600000004 /* BiometricsService.swift */; };
+		A10000052C12345600000005 /* PasswordGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000052C12345600000005 /* PasswordGenerator.swift */; };
+		A10000062C12345600000006 /* LiquidGlass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000062C12345600000006 /* LiquidGlass.swift */; };
+		A10000072C12345600000007 /* LockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000072C12345600000007 /* LockView.swift */; };
+		A10000082C12345600000008 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000082C12345600000008 /* DashboardView.swift */; };
+		A10000092C12345600000009 /* ItemDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000092C12345600000009 /* ItemDetailView.swift */; };
+		A100000A2C1234560000000A /* GeneratorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000A2C1234560000000A /* GeneratorSheet.swift */; };
+		A100000B2C1234560000000B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B100000B2C1234560000000B /* SettingsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		C10000012C12345600000001 /* TsifraSafe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TsifraSafe.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000012C12345600000001 /* TsifraSafeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TsifraSafeApp.swift; sourceTree = "<group>"; };
+		B10000022C12345600000002 /* VaultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultItem.swift; sourceTree = "<group>"; };
+		B10000032C12345600000003 /* CryptoVaultService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoVaultService.swift; sourceTree = "<group>"; };
+		B10000042C12345600000004 /* BiometricsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricsService.swift; sourceTree = "<group>"; };
+		B10000052C12345600000005 /* PasswordGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordGenerator.swift; sourceTree = "<group>"; };
+		B10000062C12345600000006 /* LiquidGlass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiquidGlass.swift; sourceTree = "<group>"; };
+		B10000072C12345600000007 /* LockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockView.swift; sourceTree = "<group>"; };
+		B10000082C12345600000008 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		B10000092C12345600000009 /* ItemDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemDetailView.swift; sourceTree = "<group>"; };
+		B100000A2C1234560000000A /* GeneratorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratorSheet.swift; sourceTree = "<group>"; };
+		B100000B2C1234560000000B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B100000C2C1234560000000C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D10000012C12345600000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E10000012C12345600000001 = {
+			isa = PBXGroup;
+			children = (
+				E10000022C12345600000002 /* TsifraSafe */,
+				E10000032C12345600000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E10000022C12345600000002 /* TsifraSafe */ = {
+			isa = PBXGroup;
+			children = (
+				B10000012C12345600000001 /* TsifraSafeApp.swift */,
+				E10000042C12345600000004 /* Models */,
+				E10000052C12345600000005 /* Services */,
+				E10000062C12345600000006 /* Components */,
+				E10000072C12345600000007 /* Views */,
+				B100000C2C1234560000000C /* Info.plist */,
+			);
+			path = TsifraSafe;
+			sourceTree = "<group>";
+		};
+		E10000032C12345600000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C10000012C12345600000001 /* TsifraSafe.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E10000042C12345600000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B10000022C12345600000002 /* VaultItem.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E10000052C12345600000005 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B10000032C12345600000003 /* CryptoVaultService.swift */,
+				B10000042C12345600000004 /* BiometricsService.swift */,
+				B10000052C12345600000005 /* PasswordGenerator.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		E10000062C12345600000006 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B10000062C12345600000006 /* LiquidGlass.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		E10000072C12345600000007 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B10000072C12345600000007 /* LockView.swift */,
+				B10000082C12345600000008 /* DashboardView.swift */,
+				B10000092C12345600000009 /* ItemDetailView.swift */,
+				B100000A2C1234560000000A /* GeneratorSheet.swift */,
+				B100000B2C1234560000000B /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F10000012C12345600000001 /* TsifraSafe */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = G10000012C12345600000001 /* Build configuration list for PBXNativeTarget "TsifraSafe" */;
+			buildPhases = (
+				H10000012C12345600000001 /* Sources */,
+				D10000012C12345600000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TsifraSafe;
+			productName = TsifraSafe;
+			productReference = C10000012C12345600000001 /* TsifraSafe.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		080E96DDFE201D6D7F000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					F10000012C12345600000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = G10000022C12345600000002 /* Build configuration list for PBXProject "TsifraSafe" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = ru;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				ru,
+				Base,
+			);
+			mainGroup = E10000012C12345600000001;
+			productRefGroup = E10000032C12345600000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F10000012C12345600000001 /* TsifraSafe */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		H10000012C12345600000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000012C12345600000001 /* TsifraSafeApp.swift in Sources */,
+				A10000022C12345600000002 /* VaultItem.swift in Sources */,
+				A10000032C12345600000003 /* CryptoVaultService.swift in Sources */,
+				A10000042C12345600000004 /* BiometricsService.swift in Sources */,
+				A10000052C12345600000005 /* PasswordGenerator.swift in Sources */,
+				A10000062C12345600000006 /* LiquidGlass.swift in Sources */,
+				A10000072C12345600000007 /* LockView.swift in Sources */,
+				A10000082C12345600000008 /* DashboardView.swift in Sources */,
+				A10000092C12345600000009 /* ItemDetailView.swift in Sources */,
+				A100000A2C1234560000000A /* GeneratorSheet.swift in Sources */,
+				A100000B2C1234560000000B /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		I10000012C12345600000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		I10000022C12345600000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		I10000032C12345600000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TsifraSafe/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tsifra.seif.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		I10000042C12345600000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TsifraSafe/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tsifra.seif.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		G10000012C12345600000001 /* Build configuration list for PBXNativeTarget "TsifraSafe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				I10000032C12345600000003 /* Debug */,
+				I10000042C12345600000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		G10000022C12345600000002 /* Build configuration list for PBXProject "TsifraSafe" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				I10000012C12345600000001 /* Debug */,
+				I10000022C12345600000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 080E96DDFE201D6D7F000001 /* Project object */;
+}

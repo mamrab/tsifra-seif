@@ -1,0 +1,53 @@
+name: iOS Swift Build (Liquid Glass)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build Native Swift iOS App
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode Version
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Build Swift Package Core
+        working-directory: ios
+        run: |
+          swift build -v
+
+      - name: Build Xcode iOS App Target (.app)
+        run: |
+          xcodebuild \
+            -project ios/TsifraSafe.xcodeproj \
+            -scheme TsifraSafe \
+            -destination "generic/platform=iOS" \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            clean build
+
+      - name: Locate & Package Built Products
+        run: |
+          mkdir -p build-output
+          find ~/Library/Developer/Xcode/DerivedData -name "TsifraSafe.app" -exec cp -R {} build-output/ \;
+          cd build-output
+          zip -r TsifraSafe-iOS.zip TsifraSafe.app
+
+      - name: Upload iOS App Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TsifraSafe-iOS-App
+          path: build-output/TsifraSafe-iOS.zip
+          retention-days: 14
