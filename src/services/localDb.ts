@@ -15,36 +15,7 @@ const STORAGE_DATABASES_KEY = 'tsifra_vault_databases_v2';
 const STORAGE_CURRENT_DB_KEY = 'tsifra_vault_current_db_v2';
 
 const DEFAULT_ITEMS: VaultItem[] = [
-  {
-    id: 'crypto-1',
-    title: 'Ledger Cold Wallet (Основной)',
-    itemType: 'cryptoWallet',
-    notes: 'Аппаратный сейф для долгосрочного хранения активов. Доступ к резерву BTC и ETH.',
-    category: 'Крипта',
-    tags: ['Ledger', 'BIP-39', 'Cold Storage'],
-    favorite: true,
-    customFields: [
-      { id: 'f-c1', label: 'Пин от Ledger', value: '782914', isSecret: true },
-    ],
-    cryptoData: {
-      network: 'Ethereum / EVM',
-      wordCount: 12,
-      words: [
-        'witch', 'collapse', 'practice', 'feed',
-        'shame', 'open', 'despair', 'creek',
-        'road', 'again', 'ice', 'cheese'
-      ],
-      privateKey: '0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d',
-      address: '0x71CAB38872b492b49206A42E461c9B92706d3B11',
-      derivationPath: "m/44'/60'/0'/0/0",
-      passphrase: 'SecretLedgerPass2026',
-      chainId: '1',
-      rpcUrl: 'https://eth.llamarpc.com',
-      walletApp: 'Ledger Live'
-    },
-    createdAt: Date.now() - 86400000 * 5,
-    updatedAt: Date.now() - 86400000 * 1,
-  },
+
   {
     id: 'crypto-2',
     title: 'Phantom Wallet (Solana)',
@@ -72,38 +43,6 @@ const DEFAULT_ITEMS: VaultItem[] = [
     createdAt: Date.now() - 86400000 * 3,
     updatedAt: Date.now() - 86400000 * 1,
   },
-  {
-    id: 'demo-1',
-    title: 'Google Workspace',
-    itemType: 'password',
-    username: 'alex.developer@gmail.com',
-    password: 'K8#vM9$zL2!qR5@w',
-    url: 'https://accounts.google.com',
-    notes: 'Основная почта для двухфакторной аутентификации.',
-    category: 'Общие',
-    tags: ['Google', '2FA'],
-    favorite: true,
-    customFields: [
-      { id: 'f-1', label: 'Резервный email', value: 'recovery@yandex.ru', isSecret: false },
-    ],
-    createdAt: Date.now() - 86400000 * 10,
-    updatedAt: Date.now() - 86400000 * 2,
-  },
-  {
-    id: 'demo-2',
-    title: 'Корпоративный GitHub',
-    itemType: 'password',
-    username: 'alex-dev',
-    password: 'ghp_K992xLa9021vbm3489P10x99AazqQ',
-    url: 'https://github.com',
-    notes: 'Personal Access Token с правами repo и workflow',
-    category: 'Работа',
-    tags: ['Dev', 'GitHub'],
-    favorite: false,
-    customFields: [],
-    createdAt: Date.now() - 86400000 * 15,
-    updatedAt: Date.now() - 86400000 * 4,
-  }
 ];
 
 const DEFAULT_DATABASES: Record<string, StoredDatabase> = {

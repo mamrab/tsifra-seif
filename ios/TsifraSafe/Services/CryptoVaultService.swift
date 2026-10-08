@@ -62,45 +62,9 @@ public final class CryptoVaultService: ObservableObject {
 
         // Seed with initial crypto wallet and demo items
         var initialData = VaultData.default
-        let demoCrypto = VaultItem(
-            title: "Ledger Cold Wallet (Основной)",
-            itemType: .cryptoWallet,
-            notes: "Аппаратный сейф для долгосрочного хранения активов. Доступ к резерву BTC и ETH.",
-            category: "Крипта",
-            tags: ["Ledger", "BIP-39", "Cold Storage"],
-            favorite: true,
-            customFields: [
-                CustomField(label: "Пин от Ledger", value: "782914", isSecret: true)
-            ],
-            cryptoData: CryptoWalletData(
-                network: "Ethereum / EVM",
-                wordCount: 12,
-                words: [
-                    "witch", "collapse", "practice", "feed",
-                    "shame", "open", "despair", "creek",
-                    "road", "again", "ice", "cheese"
-                ],
-                privateKey: "0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d",
-                address: "0x71CAB38872b492b49206A42E461c9B92706d3B11",
-                derivationPath: "m/44'/60'/0'/0/0",
-                passphrase: "SecretLedgerPass2026",
-                rpcUrl: "https://eth.llamarpc.com",
-                chainId: "1",
-                walletApp: "Ledger Live"
-            )
-        )
 
-        let demoPassword = VaultItem(
-            title: "Google Workspace",
-            itemType: .password,
-            username: "alex.developer@gmail.com",
-            password: "K8#vM9$zL2!qR5@w",
-            url: "https://accounts.google.com",
-            notes: "Основная почта для двухфакторной аутентификации.",
-            category: "Общие",
-            tags: ["Google", "2FA"],
-            favorite: true
-        )
+
+
 
         initialData.items = [demoCrypto, demoPassword]
 
