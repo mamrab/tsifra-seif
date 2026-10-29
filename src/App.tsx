@@ -313,7 +313,14 @@ export function App() {
   }
 
   return (
-    <div className="h-screen w-screen flex bg-black text-zinc-100 overflow-hidden select-none">
+    <div className="h-screen w-screen flex bg-[#050608] text-zinc-100 overflow-hidden select-none relative">
+      {/* Background Aurora Mesh for Liquid Glass */}
+      <div className="aurora-mesh">
+        <div className="aurora-blob-1" />
+        <div className="aurora-blob-2" />
+        <div className="aurora-blob-3" />
+      </div>
+
       {/* Sidebar */}
       <VaultSidebar
         items={items}
@@ -332,7 +339,7 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 bg-zinc-950">
+      <main className="flex-1 flex flex-col min-w-0 bg-[#060810]/60 backdrop-blur-3xl relative z-10">
         {/* Header */}
         <VaultHeader
           searchQuery={searchQuery}
@@ -350,21 +357,21 @@ export function App() {
         <div className="flex-1 overflow-y-auto p-6">
           {/* Forgotten Items Top Notification Banner (if any issues found) */}
           {forgottenIssues.length > 0 && !searchQuery && (
-            <div className="mb-4 p-3 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-between text-xs animate-scale-in">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-black border border-zinc-800 flex items-center justify-center text-white">
+            <div className="mb-5 p-3.5 rounded-[22px] liquid-glass-subtle flex items-center justify-between text-xs animate-scale-in border border-amber-500/25 bg-amber-500/[0.04]">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300">
                   <Lightbulb className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-white font-medium">Ассистент сейфа:</span>
-                  <span className="text-zinc-400 ml-1.5">
+                  <span className="text-white font-semibold">Ассистент сейфа:</span>
+                  <span className="text-white/60 ml-1.5">
                     найдено {forgottenIssues.length} рекомендаций по заполнению данных и криптокошельков.
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setIsForgottenHintsOpen(true)}
-                className="px-3 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-[11px] transition-all cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl apple-btn-primary text-black font-semibold text-[11px] transition-all cursor-pointer shadow-md"
               >
                 Что вы забыли
               </button>
@@ -373,13 +380,13 @@ export function App() {
 
           {filteredItems.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8 animate-fade-in">
-              <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 mb-4 shadow-sm">
-                {searchQuery ? <Search className="w-7 h-7" /> : <KeyRound className="w-7 h-7" />}
+              <div className="w-20 h-20 rounded-3xl liquid-glass flex items-center justify-center text-cyan-400 mb-5 shadow-[0_0_30px_rgba(56,189,248,0.2)]">
+                {searchQuery ? <Search className="w-8 h-8" /> : <KeyRound className="w-8 h-8" />}
               </div>
-              <h3 className="text-base font-semibold text-white mb-1">
+              <h3 className="text-lg font-bold text-white mb-1.5 tracking-tight">
                 {searchQuery ? 'Ничего не найдено' : 'В сейфе пока нет записей'}
               </h3>
-              <p className="text-xs text-zinc-400 max-w-sm mb-5">
+              <p className="text-xs text-white/50 max-w-sm mb-6 leading-relaxed">
                 {searchQuery
                   ? 'Попробуйте изменить поисковый запрос или сбросить фильтры'
                   : 'Добавьте свой первый пароль, мнемоническую сид-фразу кошелька или защищенную заметку.'}
@@ -390,9 +397,9 @@ export function App() {
                     setEditingItem(null);
                     setIsItemModalOpen(true);
                   }}
-                  className="py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs shadow-sm transition-all flex items-center gap-1.5 active:scale-95"
+                  className="py-3 px-5 rounded-2xl apple-btn-primary text-xs flex items-center gap-2 active:scale-95 cursor-pointer shadow-xl"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4 stroke-[2.5]" />
                   Создать первую запись
                 </button>
               )}

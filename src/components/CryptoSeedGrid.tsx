@@ -84,7 +84,7 @@ const NETWORK_PRESETS: Record<string, NetworkPreset> = {
     chainId: '',
     defaultRpc: '',
     defaultApp: 'Hardware / Web3',
-  }
+  },
 };
 
 export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
@@ -179,7 +179,6 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
     }
   };
 
-  // Inspect private key format
   const detectKeyType = (key?: string) => {
     if (!key) return null;
     const clean = key.trim();
@@ -193,14 +192,14 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
   return (
     <div className="space-y-4">
       {/* Top Sub-tabs for Crypto Section */}
-      <div className="grid grid-cols-3 gap-1 bg-zinc-900/90 p-1 rounded-xl border border-zinc-800">
+      <div className="grid grid-cols-3 gap-1 bg-white/[0.04] p-1 rounded-2xl border border-white/10">
         <button
           type="button"
           onClick={() => setActiveSection('seed')}
-          className={`py-2 px-3 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+          className={`py-2 px-3 text-xs font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             activeSection === 'seed'
-              ? 'bg-white text-black font-semibold shadow-sm'
-              : 'text-zinc-400 hover:text-white'
+              ? 'bg-white text-black font-semibold shadow-md'
+              : 'text-white/60 hover:text-white'
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
@@ -210,10 +209,10 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
         <button
           type="button"
           onClick={() => setActiveSection('privateKey')}
-          className={`py-2 px-3 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+          className={`py-2 px-3 text-xs font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             activeSection === 'privateKey'
-              ? 'bg-white text-black font-semibold shadow-sm'
-              : 'text-zinc-400 hover:text-white'
+              ? 'bg-white text-black font-semibold shadow-md'
+              : 'text-white/60 hover:text-white'
           }`}
         >
           <Key className="w-3.5 h-3.5" />
@@ -223,14 +222,14 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
         <button
           type="button"
           onClick={() => setActiveSection('settings')}
-          className={`py-2 px-3 text-xs font-medium rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+          className={`py-2 px-3 text-xs font-medium rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             activeSection === 'settings'
-              ? 'bg-white text-black font-semibold shadow-sm'
-              : 'text-zinc-400 hover:text-white'
+              ? 'bg-white text-black font-semibold shadow-md'
+              : 'text-white/60 hover:text-white'
           }`}
         >
           <Settings className="w-3.5 h-3.5" />
-          <span>Параметры сети</span>
+          <span>Сеть &amp; RPC</span>
         </button>
       </div>
 
@@ -238,18 +237,18 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
       {activeSection === 'seed' && (
         <div className="space-y-4 animate-scale-in">
           {/* Network & Word Count Selector Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-zinc-900 border border-zinc-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
             <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-zinc-400" />
-              <span className="text-xs font-medium text-zinc-300">Блокчейн:</span>
+              <Globe className="w-4 h-4 text-cyan-400" />
+              <span className="text-xs font-medium text-white/80">Сеть:</span>
               <select
                 disabled={isReadOnly}
                 value={data.network || 'Ethereum / EVM'}
                 onChange={(e) => handleNetworkSelect(e.target.value)}
-                className="bg-black border border-zinc-800 rounded-lg px-2.5 py-1 text-xs text-white focus:border-white focus:outline-none cursor-pointer"
+                className="liquid-input rounded-xl px-3 py-1 text-xs text-white cursor-pointer"
               >
                 {Object.keys(NETWORK_PRESETS).map((net) => (
-                  <option key={net} value={net}>
+                  <option key={net} value={net} className="bg-[#0c0e17] text-white">
                     {net}
                   </option>
                 ))}
@@ -257,17 +256,17 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
             </div>
 
             {/* 12 / 18 / 24 words switch */}
-            <div className="flex items-center gap-1.5 bg-black p-1 rounded-lg border border-zinc-800">
+            <div className="flex items-center gap-1 bg-white/[0.05] p-1 rounded-xl border border-white/10">
               {[12, 18, 24].map((count) => (
                 <button
                   key={count}
                   type="button"
                   disabled={isReadOnly}
                   onClick={() => handleWordCountChange(count as 12 | 18 | 24)}
-                  className={`px-2.5 py-1 text-xs font-mono rounded-md transition-all ${
+                  className={`px-2.5 py-1 text-xs font-mono rounded-lg transition-all cursor-pointer ${
                     wordCount === count
-                      ? 'bg-white text-black font-semibold'
-                      : 'text-zinc-400 hover:text-white'
+                      ? 'bg-white text-black font-bold shadow-sm'
+                      : 'text-white/60 hover:text-white'
                   }`}
                 >
                   {count} слов
@@ -282,7 +281,7 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
               <button
                 type="button"
                 onClick={() => setShowWords(!showWords)}
-                className="px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-xl apple-btn-glass text-xs flex items-center gap-1.5 cursor-pointer"
               >
                 {showWords ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 <span>{showWords ? 'Скрыть слова' : 'Показать слова'}</span>
@@ -292,10 +291,10 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowPasteModal(true)}
-                  className="px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-xl apple-btn-glass text-xs flex items-center gap-1.5 cursor-pointer text-cyan-300"
                 >
                   <Clipboard className="w-3.5 h-3.5" />
-                  <span>Вставить всю строку</span>
+                  <span>Вставить всё</span>
                 </button>
               )}
             </div>
@@ -303,11 +302,11 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
             <button
               type="button"
               onClick={() => handleCopy(currentWords.filter(Boolean).join(' '), 'full_seed')}
-              className="px-2.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-xl apple-btn-glass text-xs flex items-center gap-1.5 cursor-pointer"
               title="Скопировать все слова в буфер"
             >
               {copiedKey === 'full_seed' ? (
-                <Check className="w-3.5 h-3.5 text-white" />
+                <Check className="w-3.5 h-3.5 text-cyan-400" />
               ) : (
                 <Clipboard className="w-3.5 h-3.5" />
               )}
@@ -316,13 +315,13 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
           </div>
 
           {/* Numbered 12/18/24 Seed Words Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 p-3.5 rounded-2xl bg-zinc-950 border border-zinc-800">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 p-3.5 rounded-3xl bg-black/40 border border-white/10 backdrop-blur-xl">
             {currentWords.map((word, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-2 px-2.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 focus-within:border-white transition-all"
+                className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-cyan-400/40 focus-within:border-cyan-400 focus-within:bg-white/[0.08] transition-all shadow-inner"
               >
-                <span className="text-[10px] font-mono font-semibold text-zinc-500 w-5 select-none text-right">
+                <span className="text-[10px] font-mono font-bold text-cyan-400/70 w-5 select-none text-right">
                   {(idx + 1).toString().padStart(2, '0')}
                 </span>
                 {isReadOnly ? (
@@ -335,7 +334,7 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                     value={word}
                     onChange={(e) => handleWordChange(idx, e.target.value)}
                     placeholder="слово..."
-                    className="w-full bg-transparent text-xs font-mono text-white focus:outline-none placeholder-zinc-600"
+                    className="w-full bg-transparent text-xs font-mono text-white focus:outline-none placeholder-white/20"
                   />
                 )}
               </div>
@@ -343,13 +342,13 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
           </div>
 
           {/* Passphrase (25th word) */}
-          <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800">
-            <div className="flex justify-between items-center mb-1">
-              <label className="text-xs font-medium text-zinc-300 flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-zinc-400" />
+          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-xl">
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="text-xs font-medium text-white/80 flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5 text-cyan-400" />
                 <span>25-е слово / Секретная фраза BIP-39 (Passphrase)</span>
               </label>
-              <span className="text-[10px] font-mono text-zinc-500">Опционально</span>
+              <span className="text-[10px] font-mono text-white/40">Опционально</span>
             </div>
             <input
               type="password"
@@ -357,7 +356,7 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
               value={data.passphrase || ''}
               onChange={(e) => onChange({ ...data, passphrase: e.target.value })}
               placeholder="Дополнительное кодовое слово защиты"
-              className="w-full px-3.5 py-2 bg-black border border-zinc-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-white"
+              className="w-full px-4 py-2.5 liquid-input rounded-xl text-xs font-mono text-white"
             />
           </div>
         </div>
@@ -366,20 +365,20 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
       {/* SECTION 2: PRIVATE KEY */}
       {activeSection === 'privateKey' && (
         <div className="space-y-4 animate-scale-in">
-          <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-3">
+          <div className="p-4 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Key className="w-4 h-4 text-white" />
+                <Key className="w-4 h-4 text-cyan-400" />
                 <h4 className="text-xs font-semibold text-white">Приватный ключ (Private Key)</h4>
               </div>
               {detectKeyType(data.privateKey) && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-950 text-zinc-300 border border-zinc-800">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
                   {detectKeyType(data.privateKey)}
                 </span>
               )}
             </div>
 
-            <p className="text-[11px] text-zinc-400 leading-relaxed">
+            <p className="text-[11px] text-white/60 leading-relaxed">
               Вставьте закрытый приватный ключ кошелька (raw hex 64 символа, WIF или Base58). Ключ хранится в локальной базе в зашифрованном виде.
             </p>
 
@@ -390,13 +389,13 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                 value={data.privateKey || ''}
                 onChange={(e) => onChange({ ...data, privateKey: e.target.value.trim() })}
                 placeholder="0x4f3e... или 5J3m..."
-                className="w-full px-3.5 py-3 bg-black border border-zinc-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-white pr-24 tracking-wide"
+                className="w-full px-4 py-3 liquid-input rounded-2xl text-xs font-mono text-white pr-24 tracking-wide"
               />
               <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 <button
                   type="button"
                   onClick={() => setShowPrivateKey(!showPrivateKey)}
-                  className="p-1.5 text-zinc-400 hover:text-white"
+                  className="p-1.5 text-white/50 hover:text-white cursor-pointer"
                   title={showPrivateKey ? 'Скрыть ключ' : 'Показать ключ'}
                 >
                   {showPrivateKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -405,11 +404,11 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                   <button
                     type="button"
                     onClick={() => handleCopy(data.privateKey!, 'private_key')}
-                    className="p-1.5 text-zinc-400 hover:text-white"
+                    className="p-1.5 text-white/50 hover:text-white cursor-pointer"
                     title="Скопировать приватный ключ"
                   >
                     {copiedKey === 'private_key' ? (
-                      <Check className="w-4 h-4 text-white" />
+                      <Check className="w-4 h-4 text-cyan-400" />
                     ) : (
                       <Clipboard className="w-4 h-4" />
                     )}
@@ -423,16 +422,16 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                 <button
                   type="button"
                   onClick={handlePastePrivateKeyFromClipboard}
-                  className="px-3 py-1.5 rounded-lg bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-300 hover:text-white transition-all flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 rounded-xl apple-btn-glass text-xs text-white/80 hover:text-white flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Clipboard className="w-3.5 h-3.5" />
-                  <span>Вставить из буфера обмена</span>
+                  <Clipboard className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Вставить из буфера</span>
                 </button>
                 {data.privateKey && (
                   <button
                     type="button"
                     onClick={() => onChange({ ...data, privateKey: '' })}
-                    className="px-2.5 py-1.5 rounded-lg text-xs text-zinc-500 hover:text-zinc-300"
+                    className="px-3 py-1.5 rounded-xl text-xs text-white/40 hover:text-red-400 cursor-pointer"
                   >
                     Очистить
                   </button>
@@ -447,13 +446,13 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
       {activeSection === 'settings' && (
         <div className="space-y-4 animate-scale-in">
           {/* Quick Preset selector */}
-          <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2">
+          <div className="p-4 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-white flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-white" />
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
                 Быстрые настройки сети
               </span>
-              <span className="text-[10px] font-mono text-zinc-500">Автозаполнение параметров</span>
+              <span className="text-[10px] font-mono text-white/40">Автозаполнение параметров</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
               {['Ethereum / EVM', 'Solana (SOL)', 'Bitcoin (BTC SegWit)', 'TON Network'].map((net) => (
@@ -461,10 +460,10 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                   key={net}
                   type="button"
                   onClick={() => handleNetworkSelect(net)}
-                  className={`py-1.5 px-2 rounded-lg text-[11px] font-medium border text-center transition-all ${
+                  className={`py-2 px-2.5 rounded-xl text-[11px] font-medium border text-center transition-all cursor-pointer ${
                     data.network === net
-                      ? 'bg-white text-black border-white font-semibold'
-                      : 'bg-black border-zinc-800 text-zinc-400 hover:text-white'
+                      ? 'bg-white text-black border-white font-bold shadow-md'
+                      : 'bg-white/[0.04] border-white/10 text-white/60 hover:text-white hover:bg-white/[0.08]'
                   }`}
                 >
                   {net.split(' ')[0]}
@@ -476,17 +475,17 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Public Address */}
             <div className="sm:col-span-2">
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-medium text-zinc-300">
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="text-xs font-medium text-white/80">
                   Публичный адрес кошелька
                 </label>
                 {data.address && (
                   <button
                     type="button"
                     onClick={() => handleCopy(data.address!, 'address')}
-                    className="text-[11px] text-zinc-400 hover:text-white flex items-center gap-1"
+                    className="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
                   >
-                    {copiedKey === 'address' ? <Check className="w-3 h-3 text-white" /> : <Clipboard className="w-3 h-3" />}
+                    {copiedKey === 'address' ? <Check className="w-3 h-3 text-cyan-400" /> : <Clipboard className="w-3 h-3" />}
                     <span>{copiedKey === 'address' ? 'Скопировано' : 'Копировать'}</span>
                   </button>
                 )}
@@ -497,13 +496,13 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                 value={data.address || ''}
                 onChange={(e) => onChange({ ...data, address: e.target.value.trim() })}
                 placeholder="0x... или bc1q... или solana..."
-                className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-white"
+                className="w-full px-4 py-2.5 liquid-input rounded-2xl text-xs font-mono text-white"
               />
             </div>
 
             {/* Derivation Path */}
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-white/80 mb-1.5">
                 Путь деривации (Derivation Path)
               </label>
               <input
@@ -512,13 +511,13 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                 value={data.derivationPath || ''}
                 onChange={(e) => onChange({ ...data, derivationPath: e.target.value.trim() })}
                 placeholder="m/44'/60'/0'/0/0"
-                className="w-full px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-white"
+                className="w-full px-4 py-2 liquid-input rounded-xl text-xs font-mono text-white"
               />
             </div>
 
             {/* Chain ID */}
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-white/80 mb-1.5">
                 ID сети (Chain ID)
               </label>
               <input
@@ -527,13 +526,13 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                 value={data.chainId || ''}
                 onChange={(e) => onChange({ ...data, chainId: e.target.value.trim() })}
                 placeholder="1 (ETH), 56 (BSC), 42161 (Arb)..."
-                className="w-full px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-white"
+                className="w-full px-4 py-2 liquid-input rounded-xl text-xs font-mono text-white"
               />
             </div>
 
             {/* Custom RPC Endpoint */}
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-white/80 mb-1.5">
                 RPC Эндпоинт (RPC URL)
               </label>
               <input
@@ -542,13 +541,13 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                 value={data.rpcUrl || ''}
                 onChange={(e) => onChange({ ...data, rpcUrl: e.target.value.trim() })}
                 placeholder="https://..."
-                className="w-full px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-white"
+                className="w-full px-4 py-2 liquid-input rounded-xl text-xs font-mono text-white"
               />
             </div>
 
             {/* Wallet Client / App */}
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-white/80 mb-1.5">
                 Приложение / Устройство
               </label>
               <input
@@ -557,7 +556,7 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                 value={data.walletApp || ''}
                 onChange={(e) => onChange({ ...data, walletApp: e.target.value.trim() })}
                 placeholder="MetaMask, Ledger, Phantom..."
-                className="w-full px-3.5 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs text-white focus:outline-none focus:border-white"
+                className="w-full px-4 py-2 liquid-input rounded-xl text-xs text-white"
               />
             </div>
           </div>
@@ -566,10 +565,10 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
 
       {/* Raw Paste Full Phrase Modal */}
       {showPasteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4 animate-scale-in">
-            <h4 className="text-sm font-semibold text-white">Вставка Seed-фразы одной строкой</h4>
-            <p className="text-xs text-zinc-400">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-2xl p-4 animate-fade-in">
+          <div className="w-full max-w-md liquid-glass rounded-[32px] p-6 space-y-4 animate-scale-in border border-white/15 shadow-2xl">
+            <h4 className="text-sm font-bold text-white">Вставка Seed-фразы одной строкой</h4>
+            <p className="text-xs text-white/60">
               Вставьте все 12, 18 или 24 слова, разделенные пробелами или переносами строк:
             </p>
             <textarea
@@ -577,7 +576,7 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
               value={rawPasteInput}
               onChange={(e) => setRawPasteInput(e.target.value)}
               placeholder="word1 word2 word3 word4 word5 ..."
-              className="w-full p-3 bg-black border border-zinc-800 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-white"
+              className="w-full p-3.5 liquid-input rounded-2xl text-xs font-mono text-white focus:outline-none"
               autoFocus
             />
             <div className="flex items-center justify-end gap-2 pt-2">
@@ -587,7 +586,7 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                   setShowPasteModal(false);
                   setRawPasteInput('');
                 }}
-                className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-xs text-zinc-300"
+                className="px-4 py-2 rounded-2xl apple-btn-glass text-xs text-white/70 hover:text-white cursor-pointer"
               >
                 Отмена
               </button>
@@ -595,7 +594,7 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
                 type="button"
                 onClick={handleApplyRawPaste}
                 disabled={!rawPasteInput.trim()}
-                className="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-semibold disabled:opacity-50"
+                className="px-5 py-2 rounded-2xl apple-btn-primary text-xs font-semibold disabled:opacity-40 cursor-pointer"
               >
                 Разбить по ячейкам
               </button>

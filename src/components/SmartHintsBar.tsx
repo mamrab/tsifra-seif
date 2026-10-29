@@ -100,53 +100,58 @@ export const SmartHintsBar: React.FC<SmartHintsBarProps> = ({
       } else {
         score += 15;
       }
-    } else if (itemType === 'secureNote') {
-      if (!notes.trim()) {
-        list.push({
-          id: 'empty-note',
-          type: 'warning',
-          text: 'Забыли ввести текст заметки — поле пока пусто.',
-        });
-      } else {
-        score += 65;
-      }
-    } else {
-      // Standard credentials (password, card, serverKey)
-      if (!username.trim() && itemType !== 'paymentCard') {
-        list.push({
-          id: 'missing-login',
-          type: 'warning',
-          text: 'Забыли логин, email или номер счета — позже будет сложно вспомнить аккаунт.',
-        });
-      } else {
-        score += 25;
-      }
-
+    } else if (itemType !== 'secureNote') {
+      // Password checks
       if (!password.trim()) {
         list.push({
           id: 'missing-password',
           type: 'warning',
-          text: 'Забыли пароль — нажмите «Сгенерировать» для создания сверхстойкого ключа.',
+          text: 'Забыли указать пароль учетной записи. Нажмите «Сгенерировать» для создания безопасного ключа.',
         });
-      } else if (password.length < 10) {
-        list.push({
-          id: 'short-password',
-          type: 'warning',
-          text: 'Пароль короче 10 символов — рекомендуется сгенерировать более стойкий ключ.',
-        });
-        score += 15;
       } else {
-        score += 35;
+        if (password.length < 8) {
+          list.push({
+            id: 'short-password',
+            type: 'warning',
+            text: `Пароль слишком короткий (${password.length} симв.). Рекомендуется от 12+ символов.`,
+          });
+          score += 15;
+        } else {
+          score += 35;
+        }
       }
 
-      if (!url.trim() && itemType === 'password') {
+      // Username check
+      if (itemType === 'password' && !username.trim()) {
+        list.push({
+          id: 'missing-username',
+          type: 'tip',
+          text: 'Забыли указать логин или email для входа.',
+        });
+      } else if (username.trim()) {
+        score += 20;
+      }
+
+      // URL check
+      if (itemType === 'password' && !url.trim()) {
         list.push({
           id: 'missing-url',
           type: 'tip',
-          text: 'Совет: укажите URL сервиса (https://...) для перехода на сайт в один клик.',
+          text: 'Забыли ссылку на сайт (URL) для быстрого перехода.',
         });
       } else if (url.trim()) {
-        score += 15;
+        score += 10;
+      }
+    } else {
+      // Secure note
+      if (!notes.trim()) {
+        list.push({
+          id: 'missing-notes',
+          type: 'warning',
+          text: 'Заметка пустая. Добавьте текст или резервную информацию.',
+        });
+      } else {
+        score += 65;
       }
     }
 
@@ -164,29 +169,29 @@ export const SmartHintsBar: React.FC<SmartHintsBarProps> = ({
 
   if (hints.length === 0) {
     return (
-      <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center justify-between text-xs text-zinc-300 animate-fade-in">
+      <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-xl flex items-center justify-between text-xs text-emerald-200 animate-fade-in shadow-sm">
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-white" />
-          <span className="font-medium text-white">Все обязательные поля отлично заполнены!</span>
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span className="font-semibold text-white">Все обязательные поля отлично заполнены!</span>
         </div>
-        <span className="font-mono text-white text-xs">100%</span>
+        <span className="font-mono text-emerald-300 font-bold text-xs">100%</span>
       </div>
     );
   }
 
   return (
-    <div className="p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 space-y-2 select-none animate-fade-in">
+    <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2 select-none animate-fade-in backdrop-blur-xl">
       {/* Progress header */}
       <div className="flex items-center justify-between text-xs">
-        <div className="flex items-center gap-1.5 text-zinc-300 font-medium">
-          <Lightbulb className="w-3.5 h-3.5 text-white" />
+        <div className="flex items-center gap-1.5 text-white/80 font-semibold">
+          <Lightbulb className="w-3.5 h-3.5 text-cyan-400" />
           <span>Подсказки ассистента ({hints.length})</span>
         </div>
-        <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-400">
+        <div className="flex items-center gap-2 font-mono text-[11px] text-white/50">
           <span>Заполнено: {progressScore}%</span>
-          <div className="w-16 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+          <div className="w-20 h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-white transition-all duration-300"
+              className="h-full bg-gradient-to-r from-cyan-400 to-sky-300 transition-all duration-300 shadow-[0_0_8px_rgba(56,189,248,0.5)]"
               style={{ width: `${progressScore}%` }}
             />
           </div>
@@ -198,16 +203,16 @@ export const SmartHintsBar: React.FC<SmartHintsBarProps> = ({
         {hints.slice(0, 3).map((hint) => (
           <div
             key={hint.id}
-            className={`flex items-start gap-2 text-[11px] leading-tight py-1 px-2 rounded-lg ${
+            className={`flex items-start gap-2 text-[11px] leading-tight py-1.5 px-2.5 rounded-xl ${
               hint.type === 'warning'
-                ? 'bg-zinc-900 text-zinc-200 border border-zinc-800'
-                : 'text-zinc-400'
+                ? 'bg-amber-500/10 text-amber-200 border border-amber-500/20'
+                : 'text-white/60 bg-white/[0.02]'
             }`}
           >
             {hint.type === 'warning' ? (
-              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-white mt-0.5" />
+              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-amber-400 mt-0.5" />
             ) : (
-              <Info className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500 mt-0.5" />
+              <Info className="w-3.5 h-3.5 flex-shrink-0 text-cyan-400 mt-0.5" />
             )}
             <span>{hint.text}</span>
           </div>

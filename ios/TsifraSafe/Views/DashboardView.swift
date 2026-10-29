@@ -77,7 +77,7 @@ public struct DashboardView: View {
 
                         // Action Buttons: Generator, Settings, Lock
                         HStack(spacing: 10) {
-                            headerIconButton(icon: "sparkles", color: .white) {
+                            headerIconButton(icon: "sparkles", color: .cyanAccent) {
                                 isGeneratorPresented = true
                             }
 
@@ -85,7 +85,7 @@ public struct DashboardView: View {
                                 isSettingsPresented = true
                             }
 
-                            headerIconButton(icon: "lock.fill", color: .white.opacity(0.7)) {
+                            headerIconButton(icon: "lock.fill", color: Color(red: 0.98, green: 0.36, blue: 0.36)) {
                                 vaultService.lock()
                             }
                         }
@@ -100,7 +100,7 @@ public struct DashboardView: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "lightbulb.fill")
                                     .font(.system(size: 13))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(Color(red: 0.98, green: 0.75, blue: 0.18))
 
                                 Text("Что вы забыли: \(forgottenCount) рекомендаций по безопасности")
                                     .font(.system(size: 12, weight: .medium))
@@ -115,9 +115,16 @@ public struct DashboardView: View {
                             }
                             .padding(.horizontal, 14)
                             .padding(.vertical, 10)
-                            .background(Color(white: 0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .background(Color(red: 0.98, green: 0.75, blue: 0.18).opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                             .overlay(
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .stroke(Color(red: 0.98, green: 0.75, blue: 0.18).opacity(0.25), lineWidth: 1)
+                            )
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 12)
+                    }
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                                     .stroke(Color.white.opacity(0.12), lineWidth: 1)
                             )

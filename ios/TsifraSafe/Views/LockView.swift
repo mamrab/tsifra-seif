@@ -28,32 +28,56 @@ public struct LockView: View {
             VStack(spacing: 20) {
                 Spacer(minLength: 12)
 
-                // Monochrome Shield Logo
-                VStack(spacing: 10) {
+                // iOS 27 Glowing Cipher Logo
+                VStack(spacing: 12) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .fill(Color(white: 0.08))
+                        RoundedRectangle(cornerRadius: 26, style: .continuous)
+                            .fill(Color.cyanAccent.opacity(0.22))
+                            .frame(width: 80, height: 80)
+                            .blur(radius: 16)
+
+                        RoundedRectangle(cornerRadius: 26, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color(white: 0.14), Color(white: 0.05)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
                             .frame(width: 76, height: 76)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [Color.white.opacity(0.4), Color.cyanAccent.opacity(0.35), Color.white.opacity(0.1)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 1.5
+                                    )
                             )
                             .shadow(color: Color.black.opacity(0.6), radius: 20, x: 0, y: 8)
 
                         Image(systemName: "lock.shield.fill")
                             .font(.system(size: 36, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.white, Color.cyanAccent],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
                     }
 
                     Text("Цифра-Сейф")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
 
                     Text(isCreatingVault
                          ? "Задайте новый мастер-PIN (\(pinLength) цифр)"
                          : "Безопасное Zero-Knowledge хранилище")
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.white.opacity(0.6))
+                        .foregroundColor(.white.opacity(0.65))
                 }
 
                 // Error message banner
@@ -124,17 +148,22 @@ public struct LockView: View {
 
                 if !useTextPassword {
                     // PIN Bullets
-                    HStack(spacing: 14) {
+                    HStack(spacing: 16) {
                         ForEach(0..<pinLength, id: \.self) { idx in
                             Circle()
-                                .fill(idx < enteredPin.count ? Color.white : Color.white.opacity(0.12))
-                                .frame(width: 14, height: 14)
+                                .fill(
+                                    idx < enteredPin.count
+                                        ? AnyShapeStyle(LinearGradient(colors: [Color.white, Color.cyanAccent], startPoint: .top, endPoint: .bottom))
+                                        : AnyShapeStyle(Color.white.opacity(0.12))
+                                )
+                                .frame(width: 15, height: 15)
                                 .overlay(
                                     Circle()
-                                        .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                                        .stroke(idx < enteredPin.count ? Color.white : Color.white.opacity(0.25), lineWidth: 1)
                                 )
-                                .scaleEffect(idx < enteredPin.count ? 1.15 : 1.0)
-                                .animation(.spring(response: 0.2, dampingFraction: 0.7), value: enteredPin.count)
+                                .shadow(color: idx < enteredPin.count ? Color.cyanAccent.opacity(0.7) : Color.clear, radius: 8)
+                                .scaleEffect(idx < enteredPin.count ? 1.25 : 1.0)
+                                .animation(.spring(response: 0.25, dampingFraction: 0.65), value: enteredPin.count)
                         }
                     }
                     .padding(.vertical, 2)

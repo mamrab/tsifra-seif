@@ -106,17 +106,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setBackupSuccess(null);
     setIsProcessingBackup(true);
     try {
-      const base64Data = await vaultApi.exportBackup();
-      const blob = new Blob([base64Data], { type: 'application/octet-stream' });
+      const rawEncrypted = await vaultApi.exportBackup();
+      const blob = new Blob([rawEncrypted], { type: 'application/octet-stream' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `tsifra_vault_backup_${new Date().toISOString().slice(0, 10)}.tsvault`;
+      a.download = `tsifra_backup_${new Date().toISOString().slice(0, 10)}.tsvault`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      setBackupSuccess('Зашифрованный файл бэкапа успешно скачан!');
+      setBackupSuccess('Резервная копия успешно экспортирована');
     } catch (err: unknown) {
-      setBackupError(err instanceof Error ? err.message : 'Ошибка экспорта бэкапа');
+      setBackupError(err instanceof Error ? err.message : 'Ошибка экспорта');
     } finally {
       setIsProcessingBackup(false);
     }
@@ -124,8 +126,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleImportBackup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!importBase64.trim() || !importPassword.trim()) {
-      setBackupError('Укажите зашифрованные данные бэкапа и мастер-пароль к ним');
+    if (!importBase64 || !importPassword) {
+      setBackupError('Выберите файл и введите пароль');
       return;
     }
 
@@ -134,10 +136,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setIsProcessingBackup(true);
     try {
       await vaultApi.importBackup(importBase64, importPassword);
-      setBackupSuccess('Резервная копия успешно восстановлена!');
+      setBackupSuccess('Хранилище успешно восстановлено из резервной копии!');
       await onUpdateStatus();
-      setImportBase64('');
-      setImportPassword('');
+      setTimeout(() => {
+        onClose();
+      }, 1500);
     } catch (err: unknown) {
       setBackupError(err instanceof Error ? err.message : 'Ошибка импорта бэкапа');
     } finally {
@@ -157,33 +160,39 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-fade-in">
-      <div className="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl p-6 relative max-h-[90vh] flex flex-col animate-scale-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-2xl p-4 animate-fade-in">
+      <div className="w-full max-w-lg liquid-glass rounded-[32px] p-6 sm:p-7 relative max-h-[90vh] flex flex-col animate-scale-in border border-white/15 shadow-[0_25px_80px_rgba(0,0,0,0.85)]">
+        {/* Top Specular Rim */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
+
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-zinc-800 flex-shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white">
+        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400 shadow-[0_0_12px_rgba(56,189,248,0.2)]">
               <Shield className="w-4 h-4" />
             </div>
-            <h3 className="text-base font-semibold text-white">Настройки безопасности</h3>
+            <div>
+              <h3 className="text-sm font-bold text-white tracking-tight">Настройки безопасности</h3>
+              <p className="text-[11px] text-white/50">Конфигурация шифрования и доступа</p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-850 transition-colors"
+            className="p-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer active:scale-90"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="grid grid-cols-4 gap-1 bg-zinc-900 p-1 rounded-xl border border-zinc-800 my-4 flex-shrink-0">
+        <div className="grid grid-cols-4 gap-1 bg-white/[0.04] p-1 rounded-2xl border border-white/10 my-4 flex-shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('security')}
-            className={`py-2 text-xs font-medium rounded-lg transition-all ${
+            className={`py-2 text-xs font-medium rounded-xl transition-all cursor-pointer ${
               activeTab === 'security'
-                ? 'bg-white text-black font-semibold shadow-sm'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-white text-black font-semibold shadow-md'
+                : 'text-white/60 hover:text-white'
             }`}
           >
             Защита
@@ -191,21 +200,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('databases')}
-            className={`py-2 text-xs font-medium rounded-lg transition-all ${
+            className={`py-2 text-xs font-medium rounded-xl transition-all cursor-pointer ${
               activeTab === 'databases'
-                ? 'bg-white text-black font-semibold shadow-sm'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-white text-black font-semibold shadow-md'
+                : 'text-white/60 hover:text-white'
             }`}
           >
-            Базы данных
+            Базы
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('password')}
-            className={`py-2 text-xs font-medium rounded-lg transition-all ${
+            className={`py-2 text-xs font-medium rounded-xl transition-all cursor-pointer ${
               activeTab === 'password'
-                ? 'bg-white text-black font-semibold shadow-sm'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-white text-black font-semibold shadow-md'
+                : 'text-white/60 hover:text-white'
             }`}
           >
             Пароль
@@ -213,10 +222,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('backup')}
-            className={`py-2 text-xs font-medium rounded-lg transition-all ${
+            className={`py-2 text-xs font-medium rounded-xl transition-all cursor-pointer ${
               activeTab === 'backup'
-                ? 'bg-white text-black font-semibold shadow-sm'
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-white text-black font-semibold shadow-md'
+                : 'text-white/60 hover:text-white'
             }`}
           >
             Бэкап
@@ -226,89 +235,89 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Tab Content */}
         <div className="overflow-y-auto py-2 pr-1 flex-1 space-y-4">
           {activeTab === 'security' && (
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               {/* Auto-lock timer */}
-              <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between">
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between backdrop-blur-xl">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-black border border-zinc-800 text-white">
+                  <div className="w-9 h-9 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center text-cyan-400">
                     <Clock className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-white">Автоблокировка</h4>
-                    <p className="text-xs text-zinc-400">Блокировать при бездействии</p>
+                    <h4 className="text-xs font-bold text-white">Автоблокировка</h4>
+                    <p className="text-[11px] text-white/50">Таймаут неактивности</p>
                   </div>
                 </div>
                 <select
                   value={autoLockMinutes}
                   onChange={(e) => setAutoLockMinutes(parseInt(e.target.value))}
-                  className="bg-black border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white cursor-pointer"
+                  className="liquid-input rounded-xl px-3 py-1.5 text-xs text-white cursor-pointer"
                 >
-                  <option value={1}>1 минута</option>
-                  <option value={5}>5 минут</option>
-                  <option value={15}>15 минут</option>
-                  <option value={30}>30 минут</option>
-                  <option value={0}>Отключено</option>
+                  <option value={1} className="bg-[#0c0e17]">1 минута</option>
+                  <option value={5} className="bg-[#0c0e17]">5 минут</option>
+                  <option value={15} className="bg-[#0c0e17]">15 минут</option>
+                  <option value={30} className="bg-[#0c0e17]">30 минут</option>
+                  <option value={0} className="bg-[#0c0e17]">Отключено</option>
                 </select>
               </div>
 
               {/* Lock on background */}
-              <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between">
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between backdrop-blur-xl">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-black border border-zinc-800 text-white">
+                  <div className="w-9 h-9 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center text-cyan-400">
                     <Shield className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-white">Блокировка при сворачивании</h4>
-                    <p className="text-xs text-zinc-400">Мгновенный lock при потере фокуса</p>
+                    <h4 className="text-xs font-bold text-white">Блокировка при сворачивании</h4>
+                    <p className="text-[11px] text-white/50">Мгновенный lock при потере фокуса</p>
                   </div>
                 </div>
                 <input
                   type="checkbox"
                   checked={lockOnBackground}
                   onChange={(e) => setLockOnBackground(e.target.checked)}
-                  className="rounded bg-black border-zinc-700 text-white focus:ring-white w-4 h-4 cursor-pointer"
+                  className="rounded bg-black/50 border-white/20 text-cyan-400 focus:ring-cyan-400 w-4 h-4 cursor-pointer"
                 />
               </div>
 
               {/* Biometrics */}
-              <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between">
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between backdrop-blur-xl">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-black border border-zinc-800 text-white">
+                  <div className="w-9 h-9 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center text-cyan-400">
                     <Fingerprint className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-white">Биометрия</h4>
-                    <p className="text-xs text-zinc-400">Touch ID, Face ID, Windows Hello</p>
+                    <h4 className="text-xs font-bold text-white">Биометрия</h4>
+                    <p className="text-[11px] text-white/50">Touch ID, Face ID, Windows Hello</p>
                   </div>
                 </div>
                 <input
                   type="checkbox"
                   checked={biometricsEnabled}
                   onChange={(e) => setBiometricsEnabled(e.target.checked)}
-                  className="rounded bg-black border-zinc-700 text-white focus:ring-white w-4 h-4 cursor-pointer"
+                  className="rounded bg-black/50 border-white/20 text-cyan-400 focus:ring-cyan-400 w-4 h-4 cursor-pointer"
                 />
               </div>
 
               {/* Clipboard Auto-clear */}
-              <div className="p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between">
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between backdrop-blur-xl">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-black border border-zinc-800 text-white">
+                  <div className="w-9 h-9 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center text-cyan-400">
                     <ClipboardCheck className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-white">Очистка буфера обмена</h4>
-                    <p className="text-xs text-zinc-400">Удалять скопированный пароль</p>
+                    <h4 className="text-xs font-bold text-white">Очистка буфера обмена</h4>
+                    <p className="text-[11px] text-white/50">Удалять скопированный пароль</p>
                   </div>
                 </div>
                 <select
                   value={clipboardClearSeconds}
                   onChange={(e) => setClipboardClearSeconds(parseInt(e.target.value))}
-                  className="bg-black border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white cursor-pointer"
+                  className="liquid-input rounded-xl px-3 py-1.5 text-xs text-white cursor-pointer"
                 >
-                  <option value={15}>15 секунд</option>
-                  <option value={30}>30 секунд</option>
-                  <option value={60}>60 секунд</option>
-                  <option value={0}>Не очищать</option>
+                  <option value={15} className="bg-[#0c0e17]">15 секунд</option>
+                  <option value={30} className="bg-[#0c0e17]">30 секунд</option>
+                  <option value={60} className="bg-[#0c0e17]">60 секунд</option>
+                  <option value={0} className="bg-[#0c0e17]">Не очищать</option>
                 </select>
               </div>
 
@@ -316,7 +325,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <button
                   type="button"
                   onClick={handleSaveSecuritySettings}
-                  className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs transition-colors"
+                  className="w-full py-3 px-4 rounded-2xl apple-btn-primary text-xs cursor-pointer shadow-lg"
                 >
                   Применить параметры
                 </button>
@@ -326,19 +335,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {activeTab === 'databases' && (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-black border border-zinc-800 text-white">
-                    <Database className="w-4 h-4" />
+              <div className="p-5 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center text-cyan-400">
+                    <Database className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-white">Текущее локальное хранилище</h4>
-                    <p className="text-xs text-zinc-400 font-mono">
+                    <h4 className="text-xs font-bold text-white">Текущее локальное хранилище</h4>
+                    <p className="text-[11px] text-cyan-300 font-mono">
                       {status?.currentDatabase || 'tsifra_vault.enc'}
                     </p>
                   </div>
                 </div>
-                <p className="text-xs text-zinc-400 leading-relaxed">
+                <p className="text-xs text-white/60 leading-relaxed">
                   Цифра-Сейф поддерживает создание изолированных зашифрованных локальных баз данных (файлы .enc с отдельным мастер-паролем, солью Argon2id и AES-256-GCM).
                 </p>
                 {onOpenDatabaseSwitcher && (
@@ -348,7 +357,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       onClose();
                       onOpenDatabaseSwitcher();
                     }}
-                    className="w-full py-2.5 px-3 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-2.5 px-4 rounded-2xl apple-btn-primary text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md"
                   >
                     <span>Управление и переключение баз</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -361,20 +370,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {activeTab === 'password' && (
             <form onSubmit={handleChangePassword} className="space-y-3.5">
               {pwError && (
-                <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center gap-2 text-white text-xs">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-red-200 text-xs">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-400" />
                   <span>{pwError}</span>
                 </div>
               )}
               {pwSuccess && (
-                <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center gap-2 text-white text-xs">
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2 text-emerald-200 text-xs">
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-400" />
                   <span>Мастер-пароль успешно изменен и хранилище перезашифровано!</span>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1">
+                <label className="block text-xs font-medium text-white/70 mb-1.5">
                   Текущий мастер-пароль
                 </label>
                 <input
@@ -383,12 +392,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   placeholder="Введите текущий пароль"
-                  className="w-full px-3.5 py-2.5 bg-black border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-white"
+                  className="w-full px-4 py-2.5 liquid-input rounded-2xl text-white text-xs font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1">
+                <label className="block text-xs font-medium text-white/70 mb-1.5">
                   Новый мастер-пароль
                 </label>
                 <input
@@ -397,12 +406,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Минимум 4 цифры или 8 символов"
-                  className="w-full px-3.5 py-2.5 bg-black border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-white"
+                  className="w-full px-4 py-2.5 liquid-input rounded-2xl text-white text-xs font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-zinc-300 mb-1">
+                <label className="block text-xs font-medium text-white/70 mb-1.5">
                   Подтвердите новый пароль
                 </label>
                 <input
@@ -411,7 +420,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Повтор пароля"
-                  className="w-full px-3.5 py-2.5 bg-black border border-zinc-800 rounded-xl text-white text-xs font-mono focus:outline-none focus:border-white"
+                  className="w-full px-4 py-2.5 liquid-input rounded-2xl text-white text-xs font-mono"
                 />
               </div>
 
@@ -419,7 +428,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <button
                   type="submit"
                   disabled={isChangingPw}
-                  className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-xs transition-colors flex items-center justify-center gap-1.5"
+                  className="w-full py-3 px-4 rounded-2xl apple-btn-primary text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-lg disabled:opacity-40"
                 >
                   <KeyRound className="w-4 h-4" />
                   {isChangingPw ? 'Перезашифрование...' : 'Сменить мастер-пароль'}
@@ -429,61 +438,61 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           )}
 
           {activeTab === 'backup' && (
-            <div className="space-y-5">
+            <div className="space-y-4">
               {backupError && (
-                <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center gap-2 text-white text-xs">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-red-200 text-xs">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-400" />
                   <span>{backupError}</span>
                 </div>
               )}
               {backupSuccess && (
-                <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center gap-2 text-white text-xs">
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2 text-emerald-200 text-xs">
+                  <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-400" />
                   <span>{backupSuccess}</span>
                 </div>
               )}
 
               {/* Export section */}
-              <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-2.5">
+              <div className="p-4 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-2.5">
                 <div className="flex items-center gap-2 text-white font-medium text-xs">
-                  <Download className="w-4 h-4" />
+                  <Download className="w-4 h-4 text-cyan-400" />
                   <span>Экспорт зашифрованного хранилища</span>
                 </div>
-                <p className="text-xs text-zinc-400">
-                  Сохраняет полную зашифрованную копию базы (включая соль Argon2id и теги GCM) в файл <b>.tsvault</b>.
+                <p className="text-xs text-white/60">
+                  Сохраняет полную зашифрованную копию базы (включая соль Argon2id и теги GCM) в файл <b className="text-white">.tsvault</b>.
                 </p>
                 <button
                   type="button"
                   onClick={handleExportBackup}
                   disabled={isProcessingBackup}
-                  className="w-full py-2 px-3 rounded-lg bg-black hover:bg-zinc-850 border border-zinc-800 text-white text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+                  className="w-full py-2.5 px-3 rounded-2xl apple-btn-glass text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="w-3.5 h-3.5 text-cyan-400" />
                   Скачать резервную копию
                 </button>
               </div>
 
               {/* Import section */}
-              <form onSubmit={handleImportBackup} className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 space-y-3">
+              <form onSubmit={handleImportBackup} className="p-4 rounded-3xl bg-white/[0.03] border border-white/10 backdrop-blur-xl space-y-3">
                 <div className="flex items-center gap-2 text-white font-medium text-xs">
-                  <Upload className="w-4 h-4" />
+                  <Upload className="w-4 h-4 text-cyan-400" />
                   <span>Импорт из резервной копии</span>
                 </div>
 
                 <div>
-                  <label className="block text-xs text-zinc-400 mb-1">
+                  <label className="block text-xs text-white/60 mb-1.5">
                     Выберите файл .tsvault:
                   </label>
                   <input
                     type="file"
                     accept=".tsvault,.enc,.txt"
                     onChange={handleFileSelect}
-                    className="w-full text-xs text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer"
+                    className="w-full text-xs text-white/60 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 cursor-pointer"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs text-zinc-400 mb-1">
+                  <label className="block text-xs text-white/60 mb-1.5">
                     Мастер-пароль от бэкапа:
                   </label>
                   <input
@@ -491,14 +500,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     value={importPassword}
                     onChange={(e) => setImportPassword(e.target.value)}
                     placeholder="Пароль для расшифровки бэкапа"
-                    className="w-full px-3 py-2 bg-black border border-zinc-800 rounded-lg text-white text-xs font-mono focus:outline-none focus:border-white"
+                    className="w-full px-4 py-2.5 liquid-input rounded-2xl text-white text-xs font-mono"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isProcessingBackup || !importBase64 || !importPassword}
-                  className="w-full py-2 px-3 rounded-lg bg-white hover:bg-zinc-200 text-black font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40"
+                  className="w-full py-2.5 px-4 rounded-2xl apple-btn-primary text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-40 cursor-pointer shadow-md"
                 >
                   <Upload className="w-3.5 h-3.5" />
                   Восстановить хранилище

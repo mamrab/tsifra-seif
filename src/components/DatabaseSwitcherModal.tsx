@@ -91,77 +91,82 @@ export const DatabaseSwitcherModal: React.FC<DatabaseSwitcherModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl p-6 relative animate-scale-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-2xl p-4 animate-fade-in">
+      <div className="w-full max-w-lg liquid-glass rounded-[32px] p-6 sm:p-7 relative animate-scale-in border border-white/15 shadow-[0_25px_80px_rgba(0,0,0,0.85)]">
+        {/* Top Specular Rim */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
+
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-700 flex items-center justify-center text-white">
+        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400 shadow-[0_0_12px_rgba(56,189,248,0.2)]">
               <Database className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">Локальные базы данных</h3>
-              <p className="text-[11px] text-zinc-400">Изолированные зашифрованные файлы сейфа</p>
+              <h3 className="text-sm font-bold text-white tracking-tight">Локальные базы данных</h3>
+              <p className="text-[11px] text-white/50">Изолированные зашифрованные файлы сейфа</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+            className="p-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer active:scale-90"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 p-3 rounded-xl bg-zinc-900 border border-zinc-700 flex items-center gap-2 text-xs text-zinc-300">
-            <AlertCircle className="w-4 h-4 text-white flex-shrink-0" />
+          <div className="mt-4 p-3 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-xs text-red-200">
+            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Database List */}
         {!isCreating ? (
-          <div className="py-4 space-y-2.5">
-            <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
+          <div className="py-4 space-y-3">
+            <div className="flex items-center justify-between text-xs text-white/60 px-1">
               <span>Доступные локальные сейфы:</span>
               <button
                 type="button"
                 onClick={() => setIsCreating(true)}
-                className="text-white hover:text-zinc-300 flex items-center gap-1 font-medium transition-colors"
+                className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition-colors cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                 Новая база данных
               </button>
             </div>
 
             <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
               {databases.map((db) => {
-                const isActive = db.isCurrent || (currentDatabase && (db.name === currentDatabase || db.filename === currentDatabase));
+                const isActive =
+                  db.isCurrent ||
+                  (currentDatabase && (db.name === currentDatabase || db.filename === currentDatabase));
                 return (
                   <div
                     key={db.filename}
                     onClick={() => !isActive && handleSwitch(db.name)}
-                    className={`p-3.5 rounded-xl border transition-all flex items-center justify-between select-none ${
+                    className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between select-none ${
                       isActive
-                        ? 'bg-zinc-900 border-white text-white'
-                        : 'bg-zinc-950 border-zinc-800 text-zinc-300 hover:bg-zinc-900/60 hover:border-zinc-700 cursor-pointer'
+                        ? 'bg-white/[0.12] border-cyan-400/50 text-white shadow-[0_0_20px_rgba(56,189,248,0.15)]'
+                        : 'bg-white/[0.03] border-white/10 text-white/70 hover:bg-white/[0.08] hover:border-white/20 cursor-pointer active:scale-[0.99]'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-black border border-zinc-800 flex items-center justify-center text-zinc-300">
-                        <HardDrive className="w-4 h-4" />
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center text-white/70 flex-shrink-0">
+                        <HardDrive className="w-4 h-4 text-cyan-400" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold text-white">{db.name}</span>
+                          <span className="text-xs font-bold text-white truncate">{db.name}</span>
                           {isActive && (
-                            <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-white text-black font-bold">
+                            <span className="text-[9px] uppercase font-mono px-2 py-0.5 rounded-full bg-cyan-400 text-black font-extrabold shadow-sm">
                               Активна
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] font-mono text-zinc-500 mt-0.5">
-                          <span>{db.filename}</span>
+                        <div className="flex items-center gap-2 text-[11px] font-mono text-white/40 mt-0.5">
+                          <span className="truncate">{db.filename}</span>
                           <span>•</span>
                           <span>{formatBytes(db.sizeBytes)}</span>
                         </div>
@@ -169,9 +174,9 @@ export const DatabaseSwitcherModal: React.FC<DatabaseSwitcherModalProps> = ({
                     </div>
 
                     {isActive ? (
-                      <Check className="w-4 h-4 text-white" />
+                      <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 ml-2" />
                     ) : (
-                      <div className="text-xs text-zinc-400 flex items-center gap-1">
+                      <div className="text-xs text-white/50 flex items-center gap-1 flex-shrink-0 ml-2">
                         <span>Переключить</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </div>
@@ -183,9 +188,9 @@ export const DatabaseSwitcherModal: React.FC<DatabaseSwitcherModalProps> = ({
           </div>
         ) : (
           /* Create New Local DB Form */
-          <form onSubmit={handleCreate} className="py-4 space-y-3.5 animate-slide-up">
+          <form onSubmit={handleCreate} className="py-4 space-y-3.5 animate-scale-in">
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-white/80 mb-1.5">
                 Название новой базы данных
               </label>
               <input
@@ -194,13 +199,13 @@ export const DatabaseSwitcherModal: React.FC<DatabaseSwitcherModalProps> = ({
                 value={newDbName}
                 onChange={(e) => setNewDbName(e.target.value)}
                 placeholder="напр. Работа, Крипто-сейф, Личное"
-                className="w-full px-3.5 py-2.5 bg-black border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white"
+                className="w-full px-4 py-2.5 liquid-input rounded-2xl text-xs text-white placeholder-white/30"
                 autoFocus
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-300 mb-1">
+              <label className="block text-xs font-medium text-white/80 mb-1.5">
                 Мастер-пароль для этой базы
               </label>
               <input
@@ -209,26 +214,30 @@ export const DatabaseSwitcherModal: React.FC<DatabaseSwitcherModalProps> = ({
                 value={newDbPassword}
                 onChange={(e) => setNewDbPassword(e.target.value)}
                 placeholder="Секретный пароль или PIN"
-                className="w-full px-3.5 py-2.5 bg-black border border-zinc-800 rounded-xl text-xs font-mono text-white placeholder-zinc-500 focus:outline-none focus:border-white"
+                className="w-full px-4 py-2.5 liquid-input rounded-2xl text-xs font-mono text-white placeholder-white/30"
               />
             </div>
 
-            <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-400">
-              Будет создан независимый зашифрованный файл <b>{newDbName ? `${newDbName.toLowerCase().replace(/\s+/g, '_')}.enc` : '*.enc'}</b> с собственным мастер-ключом.
+            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 text-[11px] text-white/60 leading-relaxed">
+              Будет создан независимый зашифрованный файл{' '}
+              <strong className="text-cyan-300 font-mono">
+                {newDbName ? `${newDbName.toLowerCase().replace(/\s+/g, '_')}.enc` : '*.enc'}
+              </strong>{' '}
+              с собственным изолированным мастер-ключом.
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setIsCreating(false)}
-                className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-xs text-zinc-300"
+                className="px-4 py-2 rounded-2xl apple-btn-glass text-xs text-white/70 hover:text-white cursor-pointer"
               >
                 Назад
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-semibold"
+                className="px-5 py-2 rounded-2xl apple-btn-primary text-xs font-semibold cursor-pointer disabled:opacity-40"
               >
                 {loading ? 'Создание...' : 'Создать базу данных'}
               </button>
@@ -236,12 +245,12 @@ export const DatabaseSwitcherModal: React.FC<DatabaseSwitcherModalProps> = ({
           </form>
         )}
 
-        <div className="pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-500">
-          <span>Хранение: локальная директория приложения</span>
+        <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between text-[11px] text-white/40">
+          <span>Хранение: изолированная локальная директория</span>
           <button
             type="button"
             onClick={onClose}
-            className="text-zinc-400 hover:text-white transition-colors"
+            className="text-white/60 hover:text-white transition-colors cursor-pointer"
           >
             Закрыть
           </button>
