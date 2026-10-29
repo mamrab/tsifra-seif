@@ -50,18 +50,18 @@ impl VaultStorage {
     }
 
     /// Creates and writes a newly initialized vault with the given master password.
-    /// Returns the derived key for in-memory session use.
+    /// Returns both the derived key and salt for in-memory session use.
     pub fn initialize(
         &self,
         master_password: &str,
         initial_data: &VaultData,
-    ) -> Result<Zeroizing<[u8; KEY_LEN]>, StorageError> {
+    ) -> Result<(Zeroizing<[u8; KEY_LEN]>, [u8; SALT_LEN]), StorageError> {
         let salt = generate_salt();
         let key = derive_key(master_password, &salt)
             .map_err(|e| StorageError::Kdf(e.to_string()))?;
 
         self.save_with_key_and_salt(&key, &salt, initial_data)?;
-        Ok(key)
+        Ok((key, salt))
     }
 
     /// Reads and decrypts the vault from disk with the provided master password.

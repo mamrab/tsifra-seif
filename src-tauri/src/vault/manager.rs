@@ -197,9 +197,7 @@ impl VaultManager {
 
         let new_storage = VaultStorage::new(path);
         let initial_data = VaultData::default();
-        let key = new_storage.initialize(password, &initial_data)?;
-
-        let salt = [0u8; SALT_LEN]; // will be reloaded or tracked
+        let (key, salt) = new_storage.initialize(password, &initial_data)?;
 
         {
             let mut db_guard = self.current_db_name.lock().unwrap();
@@ -228,8 +226,7 @@ impl VaultManager {
 
         let initial_data = VaultData::default();
         let storage = self.storage.lock().unwrap();
-        let key = storage.initialize(master_password, &initial_data)?;
-        let salt = [0u8; SALT_LEN];
+        let (key, salt) = storage.initialize(master_password, &initial_data)?;
 
         let mut guard = self.session.lock().unwrap();
         *guard = Some(UnlockedSession {
@@ -398,5 +395,93 @@ impl VaultManager {
         drop(storage);
         drop(guard);
         Ok(self.status())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::vault::models::VaultItemType;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_manager_init_save_lock_unlock_lifecycle() {
+        let dir = tempdir().unwrap();
+        let vault_file = dir.path().join("lifecycle.enc");
+        let manager = VaultManager::new(vault_file);
+
+        assert!(!manager.is_initialized());
+        assert!(!manager.is_unlocked());
+
+        // 1. Initialize
+        let status = manager.initialize("SuperSecretPassword!").unwrap();
+        assert!(status.is_initialized);
+        assert!(status.is_unlocked);
+
+        // 2. Save Item
+        let item = VaultItem::new(
+            "Crypto Seed Vault".to_string(),
+            VaultItemType::CryptoWallet,
+            "Крипта".to_string(),
+        );
+        let saved = manager.save_item(item).unwrap();
+        assert_eq!(saved.title, "Crypto Seed Vault");
+
+        // Verify in memory
+        let items = manager.get_items().unwrap();
+        assert_eq!(items.len(), 1);
+
+        // 3. Lock Vault
+        manager.lock();
+        assert!(!manager.is_unlocked());
+        assert!(manager.get_items().is_err());
+
+        // 4. Unlock with correct password - MUST SUCCEED (verifies salt was preserved!)
+        let unlocked_status = manager.unlock("SuperSecretPassword!").unwrap();
+        assert!(unlocked_status.is_unlocked);
+
+        let reloaded_items = manager.get_items().unwrap();
+        assert_eq!(reloaded_items.len(), 1);
+        assert_eq!(reloaded_items[0].title, "Crypto Seed Vault");
+
+        // 5. Wrong password fails
+        manager.lock();
+        let wrong = manager.unlock("WrongPass!");
+        assert!(wrong.is_err());
+    }
+
+    #[test]
+    fn test_manager_create_and_switch_database() {
+        let dir = tempdir().unwrap();
+        let primary_file = dir.path().join("vault.enc");
+        let manager = VaultManager::new(primary_file);
+
+        manager.initialize("Pass1!").unwrap();
+        let item1 = VaultItem::new("Work Email".to_string(), VaultItemType::Password, "Работа".to_string());
+        manager.save_item(item1).unwrap();
+
+        // Create secondary DB
+        let status2 = manager.create_database("personal", "PassPersonal!").unwrap();
+        assert!(status2.is_unlocked);
+
+        let item2 = VaultItem::new("Personal Note".to_string(), VaultItemType::SecureNote, "Личное".to_string());
+        manager.save_item(item2).unwrap();
+
+        let items_personal = manager.get_items().unwrap();
+        assert_eq!(items_personal.len(), 1);
+        assert_eq!(items_personal[0].title, "Personal Note");
+
+        // Lock & Unlock Personal DB
+        manager.lock();
+        assert!(manager.unlock("PassPersonal!").is_ok());
+
+        // Switch back to primary
+        manager.switch_database("vault").unwrap();
+        assert!(!manager.is_unlocked());
+        assert!(manager.unlock("Pass1!").is_ok());
+
+        let primary_items = manager.get_items().unwrap();
+        assert_eq!(primary_items.len(), 1);
+        assert_eq!(primary_items[0].title, "Work Email");
     }
 }

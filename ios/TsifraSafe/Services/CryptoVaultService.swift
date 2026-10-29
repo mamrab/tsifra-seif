@@ -28,6 +28,7 @@ public final class CryptoVaultService: ObservableObject {
     @Published public private(set) var vaultData: VaultData = .default
 
     private var activeKey: SymmetricKey?
+    private var activeSalt: Data?
     private let fileManager = FileManager.default
     private let keychainService = "com.tsifra.seif.master"
     private let keychainAccount = "masterKey"
@@ -62,11 +63,7 @@ public final class CryptoVaultService: ObservableObject {
 
         // Seed with initial crypto wallet and demo items
         var initialData = VaultData.default
-
-
-
-
-        initialData.items = [demoCrypto, demoPassword]
+        initialData.items = []
 
         let encoded = try JSONEncoder().encode(initialData)
         let sealed = try AES.GCM.seal(encoded, using: key)
@@ -83,6 +80,7 @@ public final class CryptoVaultService: ObservableObject {
         try fileData.write(to: vaultURL, options: .atomic)
 
         self.activeKey = key
+        self.activeSalt = salt
         self.vaultData = initialData
         self.isInitialized = true
         self.isUnlocked = true
@@ -115,6 +113,7 @@ public final class CryptoVaultService: ObservableObject {
             let loaded = try JSONDecoder().decode(VaultData.self, from: decryptedData)
 
             self.activeKey = key
+            self.activeSalt = salt
             self.vaultData = loaded
             self.isUnlocked = true
 
@@ -157,6 +156,7 @@ public final class CryptoVaultService: ObservableObject {
     /// Locks the vault and purges keys from memory
     public func lock() {
         self.activeKey = nil
+        self.activeSalt = nil
         self.vaultData = .default
         self.isUnlocked = false
     }
@@ -200,8 +200,7 @@ public final class CryptoVaultService: ObservableObject {
     }
 
     private func persistVault(data: VaultData, key: SymmetricKey) throws {
-        var salt = Data(count: 16)
-        _ = salt.withUnsafeMutableBytes { SecRandomCopyBytes(kSecRandomDefault, 16, $0.baseAddress!) }
+        guard let salt = activeSalt else { throw CryptoVaultError.vaultLocked }
 
         let encoded = try JSONEncoder().encode(data)
         let sealed = try AES.GCM.seal(encoded, using: key)
@@ -276,6 +275,7 @@ public final class CryptoVaultService: ObservableObject {
         UserDefaults.standard.removeObject(forKey: fallbackTokenKey)
 
         self.activeKey = nil
+        self.activeSalt = nil
         self.vaultData = .default
         self.isInitialized = false
         self.isUnlocked = false

@@ -128,8 +128,8 @@ export const CryptoSeedGrid: React.FC<CryptoSeedGridProps> = ({
     const parsed = rawPasteInput
       .trim()
       .split(/[\s,\n]+/)
-      .map((w) => w.trim().toLowerCase())
-      .filter(Boolean);
+      .map((w) => w.replace(/^#?\d+[\.\:\)\-\s]*/, '').trim().toLowerCase())
+      .filter((w) => w.length > 0 && /^[a-z]+$/.test(w));
 
     if (parsed.length > 0) {
       const targetCount: 12 | 18 | 24 = parsed.length >= 24 ? 24 : parsed.length >= 18 ? 18 : 12;

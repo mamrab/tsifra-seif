@@ -1,8 +1,9 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke, isTauri as checkTauri } from '@tauri-apps/api/core';
 import { DatabaseInfo, GeneratedSecret, GeneratorConfig, VaultItem, VaultSettings, VaultStatus } from '../types/vault';
 import { localDb } from './localDb';
 
-const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+export const isTauri = (): boolean =>
+  typeof window !== 'undefined' && (checkTauri() || '__TAURI_INTERNALS__' in window);
 
 const PASSPHRASE_WORDS = [
   'anchor', 'beacon', 'citadel', 'delta', 'ember', 'falcon', 'glacier', 'harbor', 'island',
@@ -130,11 +131,11 @@ function generateSecretLocal(config: GeneratorConfig): GeneratedSecret {
 
 export const vaultApi = {
   isNative(): boolean {
-    return isTauri;
+    return isTauri();
   },
 
   async getStatus(): Promise<VaultStatus> {
-    if (isTauri) {
+    if (isTauri()) {
       return await invoke<VaultStatus>('get_vault_status');
     }
     const current = localDb.getActiveDb();
@@ -151,7 +152,7 @@ export const vaultApi = {
   },
 
   async initVault(password: string): Promise<VaultStatus> {
-    if (isTauri) {
+    if (isTauri()) {
       return await invoke<VaultStatus>('init_vault', { password });
     }
     localDb.initVault(password);
@@ -159,7 +160,7 @@ export const vaultApi = {
   },
 
   async unlockVault(password: string): Promise<VaultStatus> {
-    if (isTauri) {
+    if (isTauri()) {
       return await invoke<VaultStatus>('unlock_vault', { password });
     }
     const success = localDb.unlock(password);
@@ -170,7 +171,7 @@ export const vaultApi = {
   },
 
   async lockVault(): Promise<void> {
-    if (isTauri) {
+    if (isTauri()) {
       await invoke('lock_vault');
       return;
     }
@@ -178,27 +179,27 @@ export const vaultApi = {
   },
 
   async resetVault(newPassword?: string): Promise<void> {
-    if (!isTauri) {
+    if (!isTauri()) {
       localDb.resetActiveDb(newPassword);
     }
   },
 
   async getItems(): Promise<VaultItem[]> {
-    if (isTauri) {
+    if (isTauri()) {
       return await invoke<VaultItem[]>('get_vault_items');
     }
     return localDb.getItems();
   },
 
   async saveItem(item: VaultItem): Promise<VaultItem> {
-    if (isTauri) {
+    if (isTauri()) {
       return await invoke<VaultItem>('save_vault_item', { item });
     }
     return localDb.saveItem(item);
   },
 
   async deleteItem(id: string): Promise<void> {
-    if (isTauri) {
+    if (isTauri()) {
       await invoke('delete_vault_item', { id });
       return;
     }
@@ -206,7 +207,7 @@ export const vaultApi = {
   },
 
   async updateSettings(settings: VaultSettings): Promise<void> {
-    if (isTauri) {
+    if (isTauri()) {
       await invoke('update_vault_settings', { settings });
       return;
     }
@@ -214,7 +215,7 @@ export const vaultApi = {
   },
 
   async generatePassword(config: GeneratorConfig): Promise<GeneratedSecret> {
-    if (isTauri) {
+    if (isTauri()) {
       try {
         return await invoke<GeneratedSecret>('generate_password', { config });
       } catch (err) {
@@ -225,14 +226,14 @@ export const vaultApi = {
   },
 
   async exportBackup(): Promise<string> {
-    if (isTauri) {
+    if (isTauri()) {
       return await invoke<string>('export_vault_backup');
     }
     return localDb.exportBackup();
   },
 
   async importBackup(backupBase64: string, password: string): Promise<VaultStatus> {
-    if (isTauri) {
+    if (isTauri()) {
       return await invoke<VaultStatus>('import_vault_backup', {
         backupBase64,
         password,
@@ -243,7 +244,7 @@ export const vaultApi = {
   },
 
   async changePassword(oldPassword: string, newPassword: string): Promise<void> {
-    if (isTauri) {
+    if (isTauri()) {
       await invoke('change_vault_password', { oldPassword, newPassword });
       return;
     }
@@ -251,14 +252,14 @@ export const vaultApi = {
   },
 
   async listDatabases(): Promise<DatabaseInfo[]> {
-    if (isTauri) {
+    if (isTauri()) {
       return await invoke<DatabaseInfo[]>('list_local_databases');
     }
     return localDb.listDatabases();
   },
 
   async switchDatabase(name: string): Promise<VaultStatus> {
-    if (isTauri) {
+    if (isTauri()) {
       return await invoke<VaultStatus>('switch_local_database', { name });
     }
     localDb.switchDatabase(name);
@@ -266,7 +267,7 @@ export const vaultApi = {
   },
 
   async createDatabase(name: string, password: string): Promise<VaultStatus> {
-    if (isTauri) {
+    if (isTauri()) {
       return await invoke<VaultStatus>('create_local_database', { name, password });
     }
     localDb.createDatabase(name, password);
