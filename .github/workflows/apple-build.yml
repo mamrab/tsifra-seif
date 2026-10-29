@@ -1,0 +1,119 @@
+name: Apple Ecosystem Builds (iOS & macOS)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+concurrency:
+  group: apple-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =========================================================================
+  # 1. iOS Native Build (iPhone / iPad .ipa)
+  # =========================================================================
+  build-ios:
+    name: Build iOS App (.ipa)
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode Version
+        run: |
+          if [ -d "/Applications/Xcode_15.4.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          elif [ -d "/Applications/Xcode_16.0.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
+          else
+            sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          fi
+          xcodebuild -version
+
+      - name: Build Xcode iOS Target (.app)
+        run: |
+          xcodebuild \
+            -project ios/TsifraSafe.xcodeproj \
+            -scheme TsifraSafe \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath build-output/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            clean build
+
+      - name: Package .ipa File
+        run: |
+          mkdir -p build-output/Payload
+          APP_PATH=$(find build-output/DerivedData -name "TsifraSafe.app" -type d | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            # Fallback to global DerivedData if needed
+            APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "TsifraSafe.app" -type d | head -n 1)
+          fi
+          if [ -z "$APP_PATH" ]; then
+            echo "Error: TsifraSafe.app not found!"
+            exit 1
+          fi
+          echo "Found compiled app at: $APP_PATH"
+          cp -R "$APP_PATH" build-output/Payload/
+          cd build-output
+          zip -r -9 TsifraSafe-iOS.ipa Payload
+          echo "Generated IPA package:"
+          ls -lh TsifraSafe-iOS.ipa
+
+      - name: Upload iOS .ipa Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TsifraSafe-iOS-IPA
+          path: build-output/TsifraSafe-iOS.ipa
+          retention-days: 14
+
+  # =========================================================================
+  # 2. macOS Desktop Build (Apple Silicon / Intel .dmg & .app)
+  # =========================================================================
+  build-macos:
+    name: Build macOS Desktop (.dmg & .app)
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin, x86_64-apple-darwin
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Frontend Dependencies
+        run: npm ci || npm install
+
+      - name: Build Web Assets & Tauri macOS Bundles
+        run: |
+          npm run build
+          npx tauri build
+
+      - name: Collect macOS Artifacts
+        run: |
+          mkdir -p macos-output
+          find src-tauri/target -name "*.dmg" -exec cp {} macos-output/ \; 2>/dev/null || true
+          find src-tauri/target/release/bundle/macos -maxdepth 1 -name "*.app" -exec cp -R {} macos-output/ \; 2>/dev/null || true
+          echo "Collected macOS artifacts:"
+          ls -lh macos-output/
+
+      - name: Upload macOS Desktop Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TsifraSafe-macOS-Desktop
+          path: macos-output/
+          retention-days: 14
