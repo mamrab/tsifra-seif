@@ -52,63 +52,70 @@ body {
 
 /* Liquid Glass Utilities (iOS 27 Specular Glassmorphism) */
 .liquid-glass {
-  background: rgba(18, 20, 29, 0.65);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(13, 16, 25, 0.60) 100%);
+  backdrop-filter: blur(36px) saturate(210%);
+  -webkit-backdrop-filter: blur(36px) saturate(210%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 0 20px 0 rgba(255, 255, 255, 0.02),
-    0 24px 64px -12px rgba(0, 0, 0, 0.75);
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35),
+    inset 0 0 24px 0 rgba(255, 255, 255, 0.03),
+    0 24px 64px -12px rgba(0, 0, 0, 0.75),
+    0 0 30px -8px rgba(56, 189, 248, 0.12);
 }
 
 .liquid-glass-subtle {
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
+    0 8px 24px -6px rgba(0, 0, 0, 0.4);
 }
 
 .liquid-card {
-  background: rgba(17, 19, 28, 0.55);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(15, 18, 28, 0.55) 100%);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: 
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
-    0 12px 30px -8px rgba(0, 0, 0, 0.5);
+    inset 0 1.2px 1px 0 rgba(255, 255, 255, 0.28),
+    0 12px 32px -8px rgba(0, 0, 0, 0.55),
+    0 0 18px -4px rgba(56, 189, 248, 0.06);
   transition: all 0.26s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .liquid-card:hover {
-  background: rgba(28, 32, 48, 0.65);
-  border-color: rgba(56, 189, 248, 0.35);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(22, 28, 44, 0.68) 100%);
+  border-color: rgba(56, 189, 248, 0.45);
   box-shadow: 
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.3),
-    0 20px 40px -10px rgba(0, 0, 0, 0.7),
-    0 0 24px -4px rgba(56, 189, 248, 0.15);
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.45),
+    0 20px 44px -10px rgba(0, 0, 0, 0.75),
+    0 0 30px -4px rgba(56, 189, 248, 0.25);
   transform: translateY(-2px);
 }
 
 .liquid-input {
-  background: rgba(12, 14, 20, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+  background: rgba(10, 13, 20, 0.65);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 2px 6px 0 rgba(0, 0, 0, 0.4);
   color: #ffffff;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .liquid-input:focus {
-  background: rgba(16, 19, 28, 0.9);
+  background: rgba(14, 18, 28, 0.85);
   border-color: #38bdf8;
   outline: none;
   box-shadow: 
     0 0 0 1px #38bdf8,
-    0 0 16px -2px rgba(56, 189, 248, 0.3),
-    inset 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    0 0 20px -2px rgba(56, 189, 248, 0.45),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 /* Primary Apple Pill Button */
@@ -157,30 +164,30 @@ body {
 
 /* iOS Circular Keypad Button */
 .keypad-button {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 100%);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.2),
-    0 8px 20px -4px rgba(0, 0, 0, 0.4);
+    inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.40),
+    0 8px 24px -4px rgba(0, 0, 0, 0.5);
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .keypad-button:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
+  border-color: rgba(255, 255, 255, 0.40);
   box-shadow: 
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.3),
-    0 10px 24px -4px rgba(56, 189, 248, 0.2);
+    inset 0 2px 1px 0 rgba(255, 255, 255, 0.6),
+    0 12px 28px -4px rgba(56, 189, 248, 0.35);
   transform: translateY(-1px);
 }
 
 .keypad-button:active {
-  background: rgba(56, 189, 248, 0.25);
+  background: rgba(56, 189, 248, 0.35);
   border-color: #38bdf8;
-  transform: scale(0.94);
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+  transform: scale(0.93);
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.55);
 }
 
 /* Ambient Floating Aurora Mesh (iOS 27 Dynamic Background) */
@@ -195,33 +202,33 @@ body {
 .aurora-blob-1 {
   position: absolute;
   top: -10%;
-  left: 15%;
-  width: 550px;
-  height: 550px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(3, 105, 161, 0.05) 50%, transparent 70%);
-  filter: blur(80px);
+  left: 10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.28) 0%, rgba(3, 105, 161, 0.12) 50%, transparent 70%);
+  filter: blur(70px);
   animation: floatOrb 22s infinite alternate ease-in-out;
 }
 
 .aurora-blob-2 {
   position: absolute;
-  bottom: -15%;
-  right: 10%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(129, 140, 248, 0.12) 0%, rgba(79, 70, 229, 0.05) 50%, transparent 70%);
-  filter: blur(90px);
+  bottom: -10%;
+  right: 5%;
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.26) 0%, rgba(79, 70, 229, 0.10) 50%, transparent 70%);
+  filter: blur(80px);
   animation: floatOrb 26s infinite alternate-reverse ease-in-out;
 }
 
 .aurora-blob-3 {
   position: absolute;
-  top: 40%;
-  right: 35%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.07) 0%, transparent 65%);
-  filter: blur(80px);
+  top: 35%;
+  right: 25%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(5, 150, 105, 0.06) 50%, transparent 70%);
+  filter: blur(75px);
   animation: floatOrb 18s infinite alternate ease-in-out;
 }
 

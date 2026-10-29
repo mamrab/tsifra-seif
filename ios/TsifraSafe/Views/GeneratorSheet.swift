@@ -122,24 +122,16 @@ public struct GeneratorSheet: View {
                     Spacer()
 
                     // Action Buttons
-                    VStack(spacing: 10) {
+                    VStack(spacing: 12) {
                         if let onSelect = onSelect {
-                            Button(action: {
+                            LiquidGlassButton(
+                                title: "Использовать этот пароль",
+                                systemIcon: "checkmark.shield.fill"
+                            ) {
                                 if let val = generated?.value {
                                     onSelect(val)
                                     dismiss()
                                 }
-                            }) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "checkmark.shield.fill")
-                                    Text("Использовать этот пароль")
-                                }
-                                .font(.system(size: 15, weight: .bold))
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(Color.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                             }
                         }
 
@@ -148,12 +140,28 @@ public struct GeneratorSheet: View {
                                 Image(systemName: isCopied ? "checkmark" : "doc.on.doc.fill")
                                 Text(isCopied ? "Скопировано в буфер" : "Скопировать пароль")
                             }
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 15, weight: .semibold))
                             .foregroundColor(onSelect == nil ? .black : .white)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(onSelect == nil ? Color.white : Color(white: 0.12))
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .padding(.vertical, 16)
+                            .background(
+                                ZStack {
+                                    if onSelect == nil {
+                                        LinearGradient(
+                                            colors: [Color.white, Color(red: 0.94, green: 0.96, blue: 0.99)],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    } else {
+                                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                            .fill(.ultraThinMaterial)
+                                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                            .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                                    }
+                                }
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .shadow(color: Color.black.opacity(0.25), radius: 8, x: 0, y: 4)
                         }
                     }
                 }

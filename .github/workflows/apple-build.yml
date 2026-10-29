@@ -1,4 +1,4 @@
-name: Apple Ecosystem Builds (iOS & macOS)
+name: iPhone Build (iOS .ipa)
 
 on:
   push:
@@ -8,15 +8,15 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: apple-build-${{ github.ref }}
+  group: iphone-build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   # =========================================================================
-  # 1. iOS Native Build (iPhone / iPad .ipa)
+  # Native iPhone App Build (.ipa)
   # =========================================================================
-  build-ios:
-    name: Build iOS App (.ipa)
+  build-iphone:
+    name: Build iPhone App (.ipa)
     runs-on: macos-14
 
     steps:
@@ -34,7 +34,7 @@ jobs:
           fi
           xcodebuild -version
 
-      - name: Build Xcode iOS Target (.app)
+      - name: Build Xcode iPhone Target (.app)
         run: |
           xcodebuild \
             -project ios/TsifraSafe.xcodeproj \
@@ -48,73 +48,27 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             clean build
 
-      - name: Package .ipa File
+      - name: Package iPhone .ipa File
         run: |
           mkdir -p build-output/Payload
           APP_PATH=$(find build-output/DerivedData -name "TsifraSafe.app" -type d | head -n 1)
           if [ -z "$APP_PATH" ]; then
-            # Fallback to global DerivedData if needed
             APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "TsifraSafe.app" -type d | head -n 1)
           fi
           if [ -z "$APP_PATH" ]; then
             echo "Error: TsifraSafe.app not found!"
             exit 1
           fi
-          echo "Found compiled app at: $APP_PATH"
+          echo "Found compiled iPhone app at: $APP_PATH"
           cp -R "$APP_PATH" build-output/Payload/
           cd build-output
-          zip -r -9 TsifraSafe-iOS.ipa Payload
-          echo "Generated IPA package:"
-          ls -lh TsifraSafe-iOS.ipa
+          zip -r -9 TsifraSafe-iPhone.ipa Payload
+          echo "Generated iPhone IPA package:"
+          ls -lh TsifraSafe-iPhone.ipa
 
-      - name: Upload iOS .ipa Artifact
+      - name: Upload iPhone .ipa Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TsifraSafe-iOS-IPA
-          path: build-output/TsifraSafe-iOS.ipa
-          retention-days: 14
-
-  # =========================================================================
-  # 2. macOS Desktop Build (Apple Silicon / Intel .dmg & .app)
-  # =========================================================================
-  build-macos:
-    name: Build macOS Desktop (.dmg & .app)
-    runs-on: macos-14
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-darwin, x86_64-apple-darwin
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install Frontend Dependencies
-        run: npm ci || npm install
-
-      - name: Build Web Assets & Tauri macOS Bundles
-        run: |
-          npm run build
-          npx tauri build
-
-      - name: Collect macOS Artifacts
-        run: |
-          mkdir -p macos-output
-          find src-tauri/target -name "*.dmg" -exec cp {} macos-output/ \; 2>/dev/null || true
-          find src-tauri/target/release/bundle/macos -maxdepth 1 -name "*.app" -exec cp -R {} macos-output/ \; 2>/dev/null || true
-          echo "Collected macOS artifacts:"
-          ls -lh macos-output/
-
-      - name: Upload macOS Desktop Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: TsifraSafe-macOS-Desktop
-          path: macos-output/
+          name: TsifraSafe-iPhone-IPA
+          path: build-output/TsifraSafe-iPhone.ipa
           retention-days: 14

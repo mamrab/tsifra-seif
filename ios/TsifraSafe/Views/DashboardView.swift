@@ -62,30 +62,57 @@ public struct DashboardView: View {
                 LiquidGlassBackground()
 
                 VStack(spacing: 0) {
-                    // Monochrome Header
-                    HStack {
-                        VStack(alignment: .leading, spacing: 3) {
+                    // Apple iOS 27 Liquid Glass Top Header
+                    HStack(spacing: 12) {
+                        // Mini glowing squircle logo
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(.ultraThinMaterial)
+                                .frame(width: 36, height: 36)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [Color.white.opacity(0.6), Color.cyanAccent.opacity(0.3)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 1
+                                        )
+                                )
+                            Image(systemName: "lock.shield.fill")
+                                .font(.system(size: 18))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [Color.white, Color.cyanAccent],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                        }
+
+                        VStack(alignment: .leading, spacing: 2) {
                             Text("Цифра-Сейф")
-                                .font(.system(size: 24, weight: .bold, design: .rounded))
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
                                 .foregroundColor(.white)
                             Text("\(vaultService.vaultData.items.count) защищенных записей")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.white.opacity(0.5))
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.white.opacity(0.6))
                         }
 
                         Spacer()
 
-                        // Action Buttons: Generator, Settings, Lock
-                        HStack(spacing: 10) {
-                            headerIconButton(icon: "sparkles", color: .cyanAccent) {
+                        // Action Buttons: Generator, Settings, Lock (Glass Discs)
+                        HStack(spacing: 8) {
+                            LiquidGlassIconButton(icon: "sparkles", color: .cyanAccent, size: 36) {
                                 isGeneratorPresented = true
                             }
 
-                            headerIconButton(icon: "gearshape.fill", color: .white.opacity(0.85)) {
+                            LiquidGlassIconButton(icon: "gearshape.fill", color: .white.opacity(0.9), size: 36) {
                                 isSettingsPresented = true
                             }
 
-                            headerIconButton(icon: "lock.fill", color: Color(red: 0.98, green: 0.36, blue: 0.36)) {
+                            LiquidGlassIconButton(icon: "lock.fill", color: Color(red: 0.98, green: 0.36, blue: 0.36), size: 36) {
                                 vaultService.lock()
                             }
                         }
@@ -94,64 +121,73 @@ public struct DashboardView: View {
                     .padding(.top, 8)
                     .padding(.bottom, 12)
 
-                    // Forgotten hints top banner
+                    // Forgotten hints top banner (Liquid Amber Glass)
                     if forgottenCount > 0 && searchText.isEmpty {
                         Button(action: { showForgottenHintsSheet = true }) {
                             HStack(spacing: 10) {
                                 Image(systemName: "lightbulb.fill")
                                     .font(.system(size: 13))
-                                    .foregroundColor(Color(red: 0.98, green: 0.75, blue: 0.18))
+                                    .foregroundColor(Color.amberAccent)
 
-                                Text("Что вы забыли: \(forgottenCount) рекомендаций по безопасности")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.9))
+                                Text("Что вы забыли: \(forgottenCount) рекомендаций по защите")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.white.opacity(0.95))
                                     .lineLimit(1)
 
                                 Spacer()
 
                                 Image(systemName: "chevron.right")
                                     .font(.system(size: 11, weight: .semibold))
-                                    .foregroundColor(.white.opacity(0.5))
+                                    .foregroundColor(.white.opacity(0.55))
                             }
-                            .padding(.horizontal, 14)
+                            .padding(.horizontal, 16)
                             .padding(.vertical, 10)
-                            .background(Color(red: 0.98, green: 0.75, blue: 0.18).opacity(0.12))
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .stroke(Color(red: 0.98, green: 0.75, blue: 0.18).opacity(0.25), lineWidth: 1)
+                            .background(
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .fill(.ultraThinMaterial)
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .fill(Color.amberAccent.opacity(0.12))
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [Color.amberAccent.opacity(0.6), Color.amberAccent.opacity(0.15)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 1.0
+                                        )
+                                }
                             )
                         }
                         .padding(.horizontal, 20)
                         .padding(.bottom, 12)
                     }
 
-                    // Search Bar
-                    HStack {
+                    // Search Bar (Apple Liquid Glass Capsule)
+                    HStack(spacing: 10) {
                         Image(systemName: "magnifyingglass")
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(.white.opacity(0.5))
+                            .font(.system(size: 14))
+
                         TextField("Поиск записей, seed, ключей...", text: $searchText)
                             .foregroundColor(.white)
                             .font(.system(size: 14))
+
                         if !searchText.isEmpty {
                             Button(action: { searchText = "" }) {
                                 Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.white.opacity(0.5))
+                                    .foregroundColor(.white.opacity(0.6))
                             }
                         }
                     }
                     .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(Color(white: 0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                    )
+                    .padding(.vertical, 11)
+                    .liquidGlassInput(cornerRadius: 16)
                     .padding(.horizontal, 20)
                     .padding(.bottom, 12)
 
-                    // Categories Horizontal Scroll
+                    // Categories Horizontal Scroll (Liquid Glass Pills)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(categories, id: \.self) { cat in
@@ -171,13 +207,24 @@ public struct DashboardView: View {
                     // Main Items List
                     if filteredItems.isEmpty {
                         Spacer()
-                        VStack(spacing: 12) {
-                            Image(systemName: "lock.shield")
-                                .font(.system(size: 44))
-                                .foregroundColor(.white.opacity(0.25))
+                        VStack(spacing: 14) {
+                            ZStack {
+                                Circle()
+                                    .fill(.ultraThinMaterial)
+                                    .frame(width: 80, height: 80)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                                    )
+                                Image(systemName: "lock.shield")
+                                    .font(.system(size: 38))
+                                    .foregroundColor(.white.opacity(0.35))
+                            }
+
                             Text("Нет сохраненных записей")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(.white.opacity(0.85))
+
                             Text("Нажмите «+», чтобы создать первую запись")
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.5))
@@ -194,12 +241,12 @@ public struct DashboardView: View {
                                 }
                             }
                             .padding(.horizontal, 20)
-                            .padding(.bottom, 90)
+                            .padding(.bottom, 95)
                         }
                     }
                 }
 
-                // Floating Action Button (+)
+                // Floating Action Button (+) — Liquid Glass Sphere
                 VStack {
                     Spacer()
                     HStack {
@@ -208,17 +255,35 @@ public struct DashboardView: View {
                             isCreatingItem = true
                         }) {
                             ZStack {
+                                // Ambient Glow
                                 Circle()
-                                    .fill(Color.white)
-                                    .frame(width: 56, height: 56)
-                                    .shadow(color: Color.black.opacity(0.6), radius: 14, x: 0, y: 6)
+                                    .fill(Color.cyanAccent.opacity(0.40))
+                                    .frame(width: 62, height: 62)
+                                    .blur(radius: 12)
+
+                                // Glass Orb
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.white, Color(red: 0.90, green: 0.94, blue: 0.99)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 58, height: 58)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.white, lineWidth: 1.5)
+                                    )
+                                    .shadow(color: Color.black.opacity(0.35), radius: 12, x: 0, y: 6)
+
                                 Image(systemName: "plus")
-                                    .font(.system(size: 22, weight: .bold))
+                                    .font(.system(size: 24, weight: .bold))
                                     .foregroundColor(.black)
                             }
                         }
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 20)
+                        .padding(.trailing, 22)
+                        .padding(.bottom, 22)
                     }
                 }
             }
@@ -240,50 +305,58 @@ public struct DashboardView: View {
         }
     }
 
-    private func headerIconButton(icon: String, color: Color, action: @escaping () -> Void) -> some View {
-        Button(action: {
-            #if canImport(UIKit)
-            let impact = UIImpactFeedbackGenerator(style: .light)
-            impact.impactOccurred()
-            #endif
-            action()
-        }) {
-            ZStack {
-                Circle()
-                    .fill(Color(white: 0.1))
-                    .frame(width: 38, height: 38)
-                    .overlay(Circle().stroke(Color.white.opacity(0.12), lineWidth: 1))
-                Image(systemName: icon)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(color)
-            }
-        }
-    }
-
     private func categoryPill(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
-                .foregroundColor(isSelected ? .black : .white.opacity(0.75))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 7)
-                .background(isSelected ? Color.white : Color(white: 0.1))
+                .foregroundColor(isSelected ? .black : .white.opacity(0.80))
+                .padding(.horizontal, 15)
+                .padding(.vertical, 8)
+                .background(
+                    ZStack {
+                        if isSelected {
+                            LinearGradient(
+                                colors: [Color.white, Color(red: 0.92, green: 0.94, blue: 0.98)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        } else {
+                            Capsule().fill(.ultraThinMaterial)
+                        }
+                    }
+                )
                 .clipShape(Capsule())
                 .overlay(
-                    Capsule().stroke(isSelected ? Color.clear : Color.white.opacity(0.12), lineWidth: 1)
+                    Capsule()
+                        .stroke(
+                            isSelected ? Color.clear : Color.white.opacity(0.20),
+                            lineWidth: 1.0
+                        )
                 )
         }
     }
 
     private func itemGlassCard(_ item: VaultItem) -> some View {
         HStack(spacing: 14) {
-            // Icon
+            // Refractive Glass Icon Tile
             ZStack {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color(white: 0.1))
-                    .frame(width: 44, height: 44)
+                    .fill(.ultraThinMaterial)
+                    .frame(width: 46, height: 46)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.40), Color.white.opacity(0.10)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1.0
+                            )
+                    )
+
                 Image(systemName: item.itemType.systemIcon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 19, weight: .semibold))
                     .foregroundColor(.white)
             }
 
@@ -293,15 +366,17 @@ public struct DashboardView: View {
                     Text(item.title)
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.white)
+
                     if item.favorite {
                         Image(systemName: "star.fill")
                             .font(.system(size: 10))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.amberAccent)
                     }
+
                     if item.itemType == .cryptoWallet && item.cryptoData?.privateKey != nil {
                         Text("PK")
                             .font(.system(size: 9, weight: .bold, design: .monospaced))
-                            .padding(.horizontal, 4)
+                            .padding(.horizontal, 5)
                             .padding(.vertical, 1)
                             .background(Color.white)
                             .foregroundColor(.black)
@@ -312,19 +387,19 @@ public struct DashboardView: View {
                 if item.itemType == .cryptoWallet {
                     Text(item.cryptoData?.network ?? "Криптокошелек")
                         .font(.system(size: 11, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.white.opacity(0.60))
                         .lineLimit(1)
                 } else {
                     Text(item.username ?? (item.notes?.components(separatedBy: "\n").first ?? item.category))
                         .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.white.opacity(0.60))
                         .lineLimit(1)
                 }
             }
 
             Spacer()
 
-            // Quick Copy Action Button
+            // Quick Copy Action Button (Liquid Glass Mini Pill)
             if item.itemType == .cryptoWallet, let words = item.cryptoData?.words, !words.isEmpty {
                 Button(action: {
                     #if canImport(UIKit)
@@ -339,11 +414,15 @@ public struct DashboardView: View {
                 }) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(copiedItemId == item.id ? Color.white : Color(white: 0.1))
-                            .frame(width: 44, height: 32)
+                            .fill(copiedItemId == item.id ? AnyShapeStyle(Color.white) : AnyShapeStyle(.ultraThinMaterial))
+                            .frame(width: 48, height: 32)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                            )
                         Text(copiedItemId == item.id ? "✓" : "Seed")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(copiedItemId == item.id ? .black : .white.opacity(0.8))
+                            .foregroundColor(copiedItemId == item.id ? .black : .white.opacity(0.90))
                     }
                 }
             } else if let pass = item.password, !pass.isEmpty {
@@ -360,17 +439,21 @@ public struct DashboardView: View {
                 }) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(copiedItemId == item.id ? Color.white : Color(white: 0.1))
+                            .fill(copiedItemId == item.id ? AnyShapeStyle(Color.white) : AnyShapeStyle(.ultraThinMaterial))
                             .frame(width: 36, height: 36)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                            )
                         Image(systemName: copiedItemId == item.id ? "checkmark" : "doc.on.doc")
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(copiedItemId == item.id ? .black : .white.opacity(0.85))
+                            .foregroundColor(copiedItemId == item.id ? .black : .white.opacity(0.90))
                     }
                 }
             }
         }
         .padding(14)
-        .liquidGlassCard(cornerRadius: 18)
+        .liquidGlassCard(cornerRadius: 20)
     }
 
     private var forgottenHintsView: some View {
@@ -379,45 +462,54 @@ public struct DashboardView: View {
                 LiquidGlassBackground()
 
                 ScrollView {
-                    VStack(spacing: 14) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Рекомендации ассистента")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                            .padding(.top, 12)
+
+                        Text("Анализ хранилища показал поля, которые вы могли случайно забыть заполнить:")
+                            .font(.system(size: 13))
+                            .foregroundColor(.white.opacity(0.65))
+
                         ForEach(vaultService.vaultData.items) { item in
-                            let missingList = getMissingFields(for: item)
-                            if !missingList.isEmpty {
+                            let missing = missingFields(for: item)
+                            if !missing.isEmpty {
                                 VStack(alignment: .leading, spacing: 8) {
                                     HStack {
                                         Image(systemName: item.itemType.systemIcon)
-                                            .foregroundColor(.white)
+                                            .foregroundColor(.cyanAccent)
                                         Text(item.title)
-                                            .font(.system(size: 15, weight: .semibold))
+                                            .font(.system(size: 15, weight: .bold))
                                             .foregroundColor(.white)
                                         Spacer()
-                                        Button("Исправить") {
-                                            showForgottenHintsSheet = false
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                                selectedItem = item
-                                            }
-                                        }
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundColor(.black)
-                                        .padding(.horizontal, 10)
-                                        .padding(.vertical, 4)
-                                        .background(Color.white)
-                                        .clipShape(Capsule())
+                                        Text(item.category)
+                                            .font(.system(size: 10, weight: .semibold))
+                                            .foregroundColor(.white.opacity(0.6))
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 2)
+                                            .background(.ultraThinMaterial)
+                                            .clipShape(Capsule())
                                     }
 
-                                    ForEach(missingList, id: \.self) { hint in
-                                        HStack(spacing: 6) {
-                                            Image(systemName: "exclamationmark.circle")
-                                                .font(.system(size: 11))
-                                                .foregroundColor(.white.opacity(0.6))
-                                            Text(hint)
+                                    ForEach(missing, id: \.self) { m in
+                                        HStack(alignment: .top, spacing: 6) {
+                                            Image(systemName: "exclamationmark.circle.fill")
                                                 .font(.system(size: 12))
-                                                .foregroundColor(.white.opacity(0.6))
+                                                .foregroundColor(Color.amberAccent)
+                                                .padding(.top, 2)
+                                            Text(m)
+                                                .font(.system(size: 13))
+                                                .foregroundColor(.white.opacity(0.85))
                                         }
                                     }
                                 }
-                                .padding(14)
-                                .liquidGlassCard(cornerRadius: 16)
+                                .padding(16)
+                                .liquidGlassCard(cornerRadius: 18)
+                                .onTapGesture {
+                                    showForgottenHintsSheet = false
+                                    selectedItem = item
+                                }
                             }
                         }
                     }
@@ -427,39 +519,37 @@ public struct DashboardView: View {
             .navigationTitle("Что вы забыли")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { showForgottenHintsSheet = false }
-                        .foregroundColor(.white)
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Готово") {
+                        showForgottenHintsSheet = false
+                    }
+                    .foregroundColor(.white)
                 }
             }
         }
     }
 
-    private func getMissingFields(for item: VaultItem) -> [String] {
-        var res: [String] = []
+    private func missingFields(for item: VaultItem) -> [String] {
+        var m: [String] = []
         if item.itemType == .cryptoWallet {
-            let wordsCount = item.cryptoData?.words.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }.count ?? 0
-            let targetCount = item.cryptoData?.wordCount ?? 12
+            let filledCount = item.cryptoData?.words.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }.count ?? 0
             let hasPk = !(item.cryptoData?.privateKey?.trimmingCharacters(in: .whitespaces).isEmpty ?? true)
-            if wordsCount == 0 && !hasPk {
-                res.append("Забыли ввести Seed-слова (\(targetCount) слов) или Private Key")
-            } else if wordsCount > 0 && wordsCount < targetCount {
-                res.append("Заполнено только \(wordsCount) из \(targetCount) слов")
+            if filledCount == 0 && !hasPk {
+                m.append("Отсутствует и Seed-фраза, и Private Key")
+            } else if filledCount > 0 && filledCount < (item.cryptoData?.wordCount ?? 12) {
+                m.append("Seed-фраза заполнена не полностью (\(filledCount) слов)")
             }
-            if item.cryptoData?.address?.trimmingCharacters(in: .whitespaces).isEmpty ?? true {
-                res.append("Не указан публичный адрес кошелька")
+            if (item.cryptoData?.address?.trimmingCharacters(in: .whitespaces).isEmpty ?? true) {
+                m.append("Не указан публичный адрес кошелька для сверки")
             }
         } else if item.itemType != .secureNote {
             if item.password?.isEmpty ?? true {
-                res.append("Не указан пароль")
+                m.append("Не сохранен пароль для этой учетной записи")
             }
             if item.username?.isEmpty ?? true {
-                res.append("Не указан логин / email")
-            }
-            if item.itemType == .password && (item.url?.isEmpty ?? true) {
-                res.append("Совет: укажите URL сайта")
+                m.append("Не указан логин или почта")
             }
         }
-        return res
+        return m
     }
 }

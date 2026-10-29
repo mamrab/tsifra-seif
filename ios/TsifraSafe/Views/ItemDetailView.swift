@@ -124,11 +124,15 @@ public struct ItemDetailView: View {
                             }
                             .padding(14)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color(white: 0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                            .background(
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .fill(.ultraThinMaterial)
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .fill(Color.amberAccent.opacity(0.10))
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .stroke(Color.amberAccent.opacity(0.35), lineWidth: 1)
+                                }
                             )
                         }
 
@@ -212,9 +216,7 @@ public struct ItemDetailView: View {
                                                 }
                                                 .padding(.horizontal, 10)
                                                 .padding(.vertical, 8)
-                                                .background(Color(white: 0.08))
-                                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.1), lineWidth: 1))
+                                                .liquidGlassInput(cornerRadius: 10)
                                             }
                                         }
 
@@ -228,8 +230,14 @@ public struct ItemDetailView: View {
                                             .foregroundColor(.white)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 10)
-                                            .background(Color(white: 0.12))
-                                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                                            .background(
+                                                ZStack {
+                                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                        .fill(.ultraThinMaterial)
+                                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                                }
+                                            )
                                         }
 
                                         glassInputField(title: "Passphrase (25-е слово)", value: $cryptoPassphrase, icon: "lock.shield", isSecure: true)
@@ -264,9 +272,7 @@ public struct ItemDetailView: View {
                                             }
                                         }
                                         .padding(12)
-                                        .background(Color(white: 0.08))
-                                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.12), lineWidth: 1))
+                                        .liquidGlassInput(cornerRadius: 12)
 
                                         Button(action: pastePrivateKey) {
                                             HStack(spacing: 6) {
@@ -277,8 +283,14 @@ public struct ItemDetailView: View {
                                             .foregroundColor(.white)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 10)
-                                            .background(Color(white: 0.12))
-                                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                                            .background(
+                                                ZStack {
+                                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                        .fill(.ultraThinMaterial)
+                                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                                }
+                                            )
                                         }
                                     }
                                 } else {
@@ -354,9 +366,7 @@ public struct ItemDetailView: View {
                                     }
                                 }
                                 .padding(12)
-                                .background(Color(white: 0.08))
-                                .clipShape(RoundedRectangle(cornerRadius: 14))
-                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.12), lineWidth: 1))
+                                .liquidGlassInput(cornerRadius: 14)
 
                                 glassInputField(title: "Веб-сайт", value: $url, icon: "link")
                             }
@@ -375,10 +385,8 @@ public struct ItemDetailView: View {
                                 .font(.system(size: 14, design: .monospaced))
                                 .foregroundColor(.white)
                                 .scrollContentBackground(.hidden)
-                                .padding(8)
-                                .background(Color(white: 0.08))
-                                .clipShape(RoundedRectangle(cornerRadius: 14))
-                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.12), lineWidth: 1))
+                                .padding(10)
+                                .liquidGlassInput(cornerRadius: 14)
                         }
                         .padding(16)
                         .liquidGlassCard(cornerRadius: 20)
@@ -391,11 +399,17 @@ public struct ItemDetailView: View {
                                     Text("Удалить запись")
                                 }
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(.white)
+                                .foregroundColor(Color(red: 1.0, green: 0.35, blue: 0.35))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
-                                .background(Color(white: 0.15))
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .background(
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                            .fill(.ultraThinMaterial)
+                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                            .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                                    }
+                                )
                             }
                             .padding(.top, 8)
                         }
@@ -489,9 +503,7 @@ public struct ItemDetailView: View {
             }
         }
         .padding(12)
-        .background(Color(white: 0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.12), lineWidth: 1))
+        .liquidGlassInput(cornerRadius: 14)
     }
 
     private func saveRecord() {

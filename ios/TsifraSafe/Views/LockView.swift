@@ -26,37 +26,47 @@ public struct LockView: View {
             LiquidGlassBackground()
 
             VStack(spacing: 20) {
-                Spacer(minLength: 12)
+                Spacer(minLength: 10)
 
-                // iOS 27 Glowing Cipher Logo
+                // iOS 27 Glowing Cipher Logo (Liquid Glass Squircle)
                 VStack(spacing: 12) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 26, style: .continuous)
-                            .fill(Color.cyanAccent.opacity(0.22))
-                            .frame(width: 80, height: 80)
-                            .blur(radius: 16)
+                        // Ambient Radial Glow
+                        Circle()
+                            .fill(Color.cyanAccent.opacity(0.35))
+                            .frame(width: 86, height: 86)
+                            .blur(radius: 20)
 
-                        RoundedRectangle(cornerRadius: 26, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color(white: 0.14), Color(white: 0.05)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                        // Glass Squircle
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .fill(.ultraThinMaterial)
                             .frame(width: 76, height: 76)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.white.opacity(0.20), Color.white.opacity(0.04)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
                                     .stroke(
                                         LinearGradient(
-                                            colors: [Color.white.opacity(0.4), Color.cyanAccent.opacity(0.35), Color.white.opacity(0.1)],
+                                            colors: [
+                                                Color.white.opacity(0.65),
+                                                Color.cyanAccent.opacity(0.40),
+                                                Color.white.opacity(0.15)
+                                            ],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         ),
-                                        lineWidth: 1.5
+                                        lineWidth: 1.2
                                     )
                             )
-                            .shadow(color: Color.black.opacity(0.6), radius: 20, x: 0, y: 8)
+                            .shadow(color: Color.black.opacity(0.5), radius: 18, x: 0, y: 8)
 
                         Image(systemName: "lock.shield.fill")
                             .font(.system(size: 36, weight: .semibold))
@@ -72,12 +82,13 @@ public struct LockView: View {
                     Text("Цифра-Сейф")
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
+                        .shadow(color: Color.black.opacity(0.4), radius: 6, x: 0, y: 2)
 
                     Text(isCreatingVault
                          ? "Задайте новый мастер-PIN (\(pinLength) цифр)"
                          : "Безопасное Zero-Knowledge хранилище")
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.white.opacity(0.65))
+                        .foregroundColor(.white.opacity(0.70))
                 }
 
                 // Error message banner
@@ -93,103 +104,100 @@ public struct LockView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
-                    .background(Color(white: 0.15))
+                    .background(.ultraThinMaterial)
                     .clipShape(Capsule())
-                    .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 1))
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.red.opacity(0.6), lineWidth: 1)
+                    )
                     .transition(.opacity)
                 }
 
-                // PIN Length & Mode Selector
+                // PIN Length & Mode Selector (Liquid Glass Pills)
                 HStack(spacing: 8) {
-                    Button(action: {
+                    modePill(title: "4 цифры", isSelected: pinLength == 4 && !useTextPassword) {
                         pinLength = 4
                         enteredPin = ""
                         errorMessage = nil
                         useTextPassword = false
-                    }) {
-                        Text("4 цифры")
-                            .font(.system(size: 11, weight: .semibold))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(pinLength == 4 && !useTextPassword ? Color.white : Color(white: 0.1))
-                            .foregroundColor(pinLength == 4 && !useTextPassword ? .black : .white.opacity(0.6))
-                            .clipShape(Capsule())
                     }
 
-                    Button(action: {
+                    modePill(title: "6 цифр", isSelected: pinLength == 6 && !useTextPassword) {
                         pinLength = 6
                         enteredPin = ""
                         errorMessage = nil
                         useTextPassword = false
-                    }) {
-                        Text("6 цифр")
-                            .font(.system(size: 11, weight: .semibold))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(pinLength == 6 && !useTextPassword ? Color.white : Color(white: 0.1))
-                            .foregroundColor(pinLength == 6 && !useTextPassword ? .black : .white.opacity(0.6))
-                            .clipShape(Capsule())
                     }
 
-                    Button(action: {
+                    modePill(title: useTextPassword ? "PIN-код" : "Пароль", isSelected: useTextPassword) {
                         useTextPassword.toggle()
                         enteredPin = ""
                         errorMessage = nil
-                    }) {
-                        Text(useTextPassword ? "PIN-код" : "Пароль")
-                            .font(.system(size: 11, weight: .semibold))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(useTextPassword ? Color.white : Color(white: 0.1))
-                            .foregroundColor(useTextPassword ? .black : .white.opacity(0.6))
-                            .clipShape(Capsule())
                     }
                 }
 
                 if !useTextPassword {
-                    // PIN Bullets
-                    HStack(spacing: 16) {
+                    // Luminous Glass PIN Bullets
+                    HStack(spacing: 18) {
                         ForEach(0..<pinLength, id: \.self) { idx in
                             Circle()
                                 .fill(
                                     idx < enteredPin.count
                                         ? AnyShapeStyle(LinearGradient(colors: [Color.white, Color.cyanAccent], startPoint: .top, endPoint: .bottom))
-                                        : AnyShapeStyle(Color.white.opacity(0.12))
+                                        : AnyShapeStyle(Color.white.opacity(0.14))
                                 )
-                                .frame(width: 15, height: 15)
+                                .frame(width: 16, height: 16)
                                 .overlay(
                                     Circle()
-                                        .stroke(idx < enteredPin.count ? Color.white : Color.white.opacity(0.25), lineWidth: 1)
+                                        .stroke(idx < enteredPin.count ? Color.white : Color.white.opacity(0.35), lineWidth: 1.2)
                                 )
-                                .shadow(color: idx < enteredPin.count ? Color.cyanAccent.opacity(0.7) : Color.clear, radius: 8)
+                                .shadow(color: idx < enteredPin.count ? Color.cyanAccent.opacity(0.8) : Color.clear, radius: 10)
                                 .scaleEffect(idx < enteredPin.count ? 1.25 : 1.0)
                                 .animation(.spring(response: 0.25, dampingFraction: 0.65), value: enteredPin.count)
                         }
                     }
-                    .padding(.vertical, 2)
+                    .padding(.vertical, 6)
                     .offset(x: isShaking ? -10 : 0)
                     .animation(.default.repeatCount(3, autoreverses: true).speed(4), value: isShaking)
 
-                    // Numeric Pad
-                    VStack(spacing: 12) {
-                        ForEach(0..<3) { row in
-                            HStack(spacing: 18) {
-                                ForEach(1..<4) { col in
-                                    let num = row * 3 + col
-                                    pinButton("\(num)")
-                                }
-                            }
+                    // Numeric Pad (Authentic Apple Liquid Glass Discs)
+                    VStack(spacing: 14) {
+                        HStack(spacing: 22) {
+                            keypadButton("1", "")
+                            keypadButton("2", "ABC")
+                            keypadButton("3", "DEF")
                         }
-
-                        HStack(spacing: 18) {
+                        HStack(spacing: 22) {
+                            keypadButton("4", "GHI")
+                            keypadButton("5", "JKL")
+                            keypadButton("6", "MNO")
+                        }
+                        HStack(spacing: 22) {
+                            keypadButton("7", "PQRS")
+                            keypadButton("8", "TUV")
+                            keypadButton("9", "WXYZ")
+                        }
+                        HStack(spacing: 22) {
                             // Left action: Face ID or Reset Pad
                             if !isCreatingVault {
                                 Button(action: triggerBiometrics) {
                                     ZStack {
                                         Circle()
-                                            .fill(Color(white: 0.1))
-                                            .frame(width: 70, height: 70)
-                                            .overlay(Circle().stroke(Color.white.opacity(0.15), lineWidth: 1))
+                                            .fill(.ultraThinMaterial)
+                                            .frame(width: 72, height: 72)
+                                        Circle()
+                                            .fill(Color.white.opacity(0.08))
+                                            .frame(width: 72, height: 72)
+                                        Circle()
+                                            .stroke(
+                                                LinearGradient(
+                                                    colors: [Color.white.opacity(0.40), Color.white.opacity(0.10)],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                ),
+                                                lineWidth: 1.0
+                                            )
+                                            .frame(width: 72, height: 72)
                                         Image(systemName: BiometricsService.shared.biometricType.systemIcon)
                                             .font(.system(size: 26, weight: .medium))
                                             .foregroundColor(.white)
@@ -199,27 +207,42 @@ public struct LockView: View {
                                 Button(action: { enteredPin = ""; errorMessage = nil }) {
                                     ZStack {
                                         Circle()
-                                            .fill(Color(white: 0.08))
-                                            .frame(width: 70, height: 70)
+                                            .fill(.ultraThinMaterial)
+                                            .frame(width: 72, height: 72)
+                                        Circle()
+                                            .stroke(Color.white.opacity(0.18), lineWidth: 1.0)
+                                            .frame(width: 72, height: 72)
                                         Text("Сброс")
                                             .font(.system(size: 13, weight: .medium))
-                                            .foregroundColor(.white.opacity(0.6))
+                                            .foregroundColor(.white.opacity(0.7))
                                     }
                                 }
                             }
 
-                            pinButton("0")
+                            keypadButton("0", "+")
 
                             // Right action: Backspace
                             Button(action: deleteDigit) {
                                 ZStack {
                                     Circle()
-                                        .fill(Color(white: 0.08))
-                                        .frame(width: 70, height: 70)
-                                        .overlay(Circle().stroke(Color.white.opacity(0.1), lineWidth: 1))
+                                        .fill(.ultraThinMaterial)
+                                        .frame(width: 72, height: 72)
+                                    Circle()
+                                        .fill(Color.white.opacity(0.06))
+                                        .frame(width: 72, height: 72)
+                                    Circle()
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [Color.white.opacity(0.40), Color.white.opacity(0.10)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 1.0
+                                        )
+                                        .frame(width: 72, height: 72)
                                     Image(systemName: "delete.left.fill")
                                         .font(.system(size: 20, weight: .medium))
-                                        .foregroundColor(.white.opacity(0.85))
+                                        .foregroundColor(.white.opacity(0.90))
                                 }
                             }
                         }
@@ -237,42 +260,39 @@ public struct LockView: View {
                             Text(isCreatingVault ? "Создать сейф" : "Разблокировать (\(enteredPin.count) цифр)")
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(.black)
-                                .padding(.horizontal, 20)
+                                .padding(.horizontal, 22)
                                 .padding(.vertical, 10)
-                                .background(Color.white)
+                                .background(
+                                    LinearGradient(
+                                        colors: [Color.white, Color(red: 0.92, green: 0.94, blue: 0.98)],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
                                 .clipShape(Capsule())
+                                .shadow(color: Color.white.opacity(0.25), radius: 10, x: 0, y: 4)
                         }
                         .transition(.opacity)
                     }
                 } else {
-                    // Full text password input mode
-                    VStack(spacing: 14) {
+                    // Full text password input mode (Liquid Glass Input)
+                    VStack(spacing: 16) {
                         SecureField("Введите мастер-пароль...", text: $enteredPin)
                             .padding(.horizontal, 16)
-                            .padding(.vertical, 14)
-                            .background(Color(white: 0.08))
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                            )
+                            .padding(.vertical, 16)
+                            .liquidGlassInput(cornerRadius: 16)
                             .foregroundColor(.white)
                             .font(.system(size: 16, design: .monospaced))
 
-                        Button(action: {
+                        LiquidGlassButton(
+                            title: isCreatingVault ? "Создать сейф" : "Разблокировать",
+                            systemIcon: "lock.open.fill"
+                        ) {
                             if !isCreatingVault {
                                 attemptUnlock(force: true)
                             } else {
                                 createVaultWithPin()
                             }
-                        }) {
-                            Text(isCreatingVault ? "Создать сейф" : "Разблокировать")
-                                .font(.system(size: 15, weight: .bold))
-                                .foregroundColor(.black)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(Color.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                         }
                         .disabled(enteredPin.isEmpty)
                     }
@@ -287,7 +307,7 @@ public struct LockView: View {
                             Text("Забыли PIN?")
                         }
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.white.opacity(0.6))
                     }
 
                     Text("•").foregroundColor(.white.opacity(0.2))
@@ -295,17 +315,16 @@ public struct LockView: View {
                     Button(action: { showResetConfirm = true }) {
                         Text("Сбросить сейф")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.white.opacity(0.6))
                     }
                 }
                 .padding(.top, 4)
 
-                Spacer(minLength: 12)
+                Spacer(minLength: 10)
             }
             .padding(.horizontal, 24)
         }
         .onAppear {
-            // Auto-trigger biometrics if available
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                 if !isCreatingVault {
                     triggerBiometrics()
@@ -330,55 +349,54 @@ public struct LockView: View {
         }
     }
 
-    private func pinButton(_ digit: String) -> some View {
-        Button(action: { appendDigit(digit) }) {
-            ZStack {
-                Circle()
-                    .fill(Color(white: 0.08))
-                    .frame(width: 70, height: 70)
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                    )
-                    .shadow(color: Color.black.opacity(0.4), radius: 8, x: 0, y: 4)
-
-                Text(digit)
-                    .font(.system(size: 26, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white)
-            }
+    private func modePill(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 11, weight: .semibold))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
+                .background(
+                    ZStack {
+                        if isSelected {
+                            LinearGradient(
+                                colors: [Color.white, Color(red: 0.92, green: 0.94, blue: 0.98)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        } else {
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(.ultraThinMaterial)
+                        }
+                    }
+                )
+                .foregroundColor(isSelected ? .black : .white.opacity(0.75))
+                .clipShape(Capsule())
+                .overlay(
+                    Capsule()
+                        .stroke(
+                            isSelected ? Color.clear : Color.white.opacity(0.20),
+                            lineWidth: 1.0
+                        )
+                )
         }
     }
 
-    private func appendDigit(_ digit: String) {
-        #if canImport(UIKit)
-        let impact = UIImpactFeedbackGenerator(style: .light)
-        impact.impactOccurred()
-        #endif
+    private func keypadButton(_ digit: String, _ letters: String) -> some View {
+        LiquidGlassKeypadButton(digit: digit, letters: letters) {
+            appendDigit(digit)
+        }
+    }
 
+    private func appendDigit(_ d: String) {
         guard enteredPin.count < pinLength else { return }
-        enteredPin.append(digit)
         errorMessage = nil
+        enteredPin += d
 
-        // Smart unlock check
-        if !isCreatingVault {
-            // Check if current enteredPin successfully decrypts the vault
-            if vaultService.canDecryptWith(password: enteredPin) {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    attemptUnlock(force: true)
-                }
-                return
-            }
-
-            // If user completed configured pinLength and it still did not match
-            if enteredPin.count == pinLength {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    attemptUnlock(force: true)
-                }
-            }
-        } else {
-            // Creation mode
-            if enteredPin.count == pinLength {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+        if enteredPin.count == pinLength {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                if !isCreatingVault {
+                    attemptUnlock(force: false)
+                } else {
                     createVaultWithPin()
                 }
             }
@@ -386,58 +404,62 @@ public struct LockView: View {
     }
 
     private func deleteDigit() {
-        #if canImport(UIKit)
-        let impact = UIImpactFeedbackGenerator(style: .light)
-        impact.impactOccurred()
-        #endif
-        guard !enteredPin.isEmpty else { return }
-        enteredPin.removeLast()
-        errorMessage = nil
+        if !enteredPin.isEmpty {
+            #if canImport(UIKit)
+            let impact = UIImpactFeedbackGenerator(style: .light)
+            impact.impactOccurred()
+            #endif
+            enteredPin.removeLast()
+            errorMessage = nil
+        }
     }
 
-    private func attemptUnlock(force: Bool = false) {
-        do {
-            try vaultService.unlock(password: enteredPin)
-            #if canImport(UIKit)
-            let notify = UINotificationFeedbackGenerator()
-            notify.notificationOccurred(.success)
-            #endif
-            errorMessage = nil
-        } catch {
-            #if canImport(UIKit)
-            let notify = UINotificationFeedbackGenerator()
-            notify.notificationOccurred(.error)
-            #endif
-            isShaking.toggle()
+    private func attemptUnlock(force: Bool) {
+        guard !isAuthenticating else { return }
+        isAuthenticating = true
 
-            if pinLength == 4 {
-                errorMessage = "Неверный PIN (\(enteredPin)). Попробуйте 1234, переключите на 6 цифр или сбросьте"
-            } else {
-                errorMessage = "Неверный PIN (\(enteredPin)). Попробуйте еще раз или сбросьте сейф"
-            }
+        let success = vaultService.tryUnlock(password: enteredPin)
+        isAuthenticating = false
 
-            // Delay clearing so user sees what was typed
+        if !success {
+            #if canImport(UIKit)
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.error)
+            #endif
+            isShaking = true
+            errorMessage = "Неверный PIN (\(enteredPin.count) цифр). Попробуйте снова"
+            enteredPin = ""
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                enteredPin = ""
+                isShaking = false
             }
+        } else {
+            #if canImport(UIKit)
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+            #endif
         }
     }
 
     private func createVaultWithPin() {
+        guard enteredPin.count >= 4 else {
+            errorMessage = "PIN должен содержать минимум 4 цифры"
+            return
+        }
         do {
             try vaultService.initialize(password: enteredPin)
             #if canImport(UIKit)
-            let notify = UINotificationFeedbackGenerator()
-            notify.notificationOccurred(.success)
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
             #endif
+            isCreatingVault = false
         } catch {
             errorMessage = error.localizedDescription
-            isShaking.toggle()
             enteredPin = ""
         }
     }
 
     private func triggerBiometrics() {
+        guard BiometricsService.shared.biometricType != .none else { return }
         Task {
             let result = await BiometricsService.shared.authenticate()
             await MainActor.run {
@@ -464,7 +486,6 @@ public struct LockView: View {
                             return
                         }
 
-                        // 3. Prompt user to enter PIN once
                         errorMessage = "Введите PIN вручную один раз, чтобы привязать Face ID"
                     }
                 case .failure(let err):
