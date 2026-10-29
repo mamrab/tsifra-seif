@@ -125,13 +125,6 @@ public struct DashboardView: View {
                         .padding(.horizontal, 20)
                         .padding(.bottom, 12)
                     }
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                            )
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 10)
-                    }
 
                     // Search Bar
                     HStack {

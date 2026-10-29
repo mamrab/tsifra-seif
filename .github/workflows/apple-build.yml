@@ -40,6 +40,7 @@ jobs:
             -project ios/TsifraSafe.xcodeproj \
             -scheme TsifraSafe \
             -sdk iphoneos \
+            -destination "generic/platform=iOS" \
             -configuration Release \
             -derivedDataPath build-output/DerivedData \
             CODE_SIGNING_ALLOWED=NO \

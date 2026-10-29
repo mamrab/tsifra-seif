@@ -190,3 +190,4 @@ export const TsifraLogo: React.FC<TsifraLogoProps> = ({
     </div>
   );
 };
+
