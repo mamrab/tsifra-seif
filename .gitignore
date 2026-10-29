@@ -1,38 +1,18 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Rust
-src-tauri/target/
-**/target/
-Cargo.lock
-
-# Apple & Xcode
-.DS_Store
-ios/.build/
+# Xcode & Apple Build Artifacts
+build/
+DerivedData/
+build-output/
 *.xcuserstate
 project.xcworkspace
 xcuserdata/
-DerivedData/
-build-output/
-android-output/
+ios/.build/
+.DS_Store
 
-# Editor directories and files
+# Logs
+*.log
+
+# Editor
+.idea
+*.sw?
 .vscode/*
 !.vscode/extensions.json
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
