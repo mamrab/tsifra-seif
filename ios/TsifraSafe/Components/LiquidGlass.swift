@@ -13,7 +13,7 @@ public struct LiquidGlassBackground: View {
     public var body: some View {
         ZStack {
             // 1. Deep Obsidian Space Canvas
-            Color(red: 0.03, green: 0.035, blue: 0.05)
+            Color(red: 0.02, green: 0.025, blue: 0.04)
                 .ignoresSafeArea()
 
             // 2. Dynamic Refractive Aurora Blobs (Luminous Bioluminescence)
@@ -33,7 +33,7 @@ public struct LiquidGlassBackground: View {
                                 ],
                                 center: .center,
                                 startRadius: 0,
-                                endRadius: w * 0.5
+                                endRadius: w * 0.55
                             )
                         )
                         .frame(width: w * 1.1, height: w * 1.1)
@@ -82,9 +82,9 @@ public struct LiquidGlassBackground: View {
             // 3. Ultra-subtle chromatic grain vignette
             LinearGradient(
                 colors: [
-                    Color.black.opacity(0.25),
+                    Color.black.opacity(0.20),
                     Color.clear,
-                    Color.black.opacity(0.55)
+                    Color.black.opacity(0.50)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -99,7 +99,7 @@ public struct LiquidGlassBackground: View {
 // =========================================================================
 
 public struct LiquidGlassCardModifier: ViewModifier {
-    var cornerRadius: CGFloat = 22
+    var cornerRadius: CGFloat = 20
 
     public func body(content: Content) -> some View {
         content
@@ -192,6 +192,120 @@ public struct LiquidGlassInputModifier: ViewModifier {
                         )
                 }
             )
+    }
+}
+
+// =========================================================================
+// Apple Squircle Icon (Native Settings / Passwords Style)
+// =========================================================================
+
+public struct AppleSquircleIcon: View {
+    public let icon: String
+    public let gradientColors: [Color]
+    public let size: CGFloat
+
+    public init(icon: String, gradientColors: [Color], size: CGFloat = 36) {
+        self.icon = icon
+        self.gradientColors = gradientColors
+        self.size = size
+    }
+
+    public var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: gradientColors,
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: size, height: size)
+                .overlay(
+                    RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 0.8)
+                )
+                .shadow(color: gradientColors.first?.opacity(0.35) ?? Color.clear, radius: 6, x: 0, y: 3)
+
+            Image(systemName: icon)
+                .font(.system(size: size * 0.50, weight: .semibold))
+                .foregroundColor(.white)
+        }
+    }
+}
+
+// =========================================================================
+// Apple Passwords Category Tile (iOS 18/27 Style Summary Card)
+// =========================================================================
+
+public struct AppleCategoryTile: View {
+    public let title: String
+    public let count: Int
+    public let icon: String
+    public let colors: [Color]
+    public let isSelected: Bool
+    public let action: () -> Void
+
+    public init(
+        title: String,
+        count: Int,
+        icon: String,
+        colors: [Color],
+        isSelected: Bool = false,
+        action: @escaping () -> Void
+    ) {
+        self.title = title
+        self.count = count
+        self.icon = icon
+        self.colors = colors
+        self.isSelected = isSelected
+        self.action = action
+    }
+
+    public var body: some View {
+        Button(action: {
+            #if canImport(UIKit)
+            let impact = UIImpactFeedbackGenerator(style: .light)
+            impact.impactOccurred()
+            #endif
+            action()
+        }) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    AppleSquircleIcon(icon: icon, gradientColors: colors, size: 34)
+                    Spacer()
+                    Text("\(count)")
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                }
+
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(isSelected ? .white : .white.opacity(0.85))
+                    .lineLimit(1)
+            }
+            .padding(14)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(.ultraThinMaterial)
+
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(colors.first?.opacity(0.20) ?? Color.clear)
+                    }
+
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(
+                            isSelected
+                                ? (colors.first?.opacity(0.6) ?? Color.white)
+                                : Color.white.opacity(0.18),
+                            lineWidth: isSelected ? 1.5 : 1.0
+                        )
+                }
+            )
+            .shadow(color: isSelected ? (colors.first?.opacity(0.25) ?? Color.clear) : Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
+        }
     }
 }
 
@@ -336,7 +450,7 @@ public struct LiquidGlassIconButton: View {
                     .frame(width: size, height: size)
 
                 Image(systemName: icon)
-                    .font(.system(size: size * 0.42, weight: .semibold))
+                    .font(.system(size: size * 0.44, weight: .semibold))
                     .foregroundColor(color)
             }
             .shadow(color: Color.black.opacity(0.25), radius: 6, x: 0, y: 3)
@@ -418,7 +532,7 @@ public struct LiquidGlassButton: View {
 // =========================================================================
 
 extension View {
-    public func liquidGlassCard(cornerRadius: CGFloat = 22) -> some View {
+    public func liquidGlassCard(cornerRadius: CGFloat = 20) -> some View {
         modifier(LiquidGlassCardModifier(cornerRadius: cornerRadius))
     }
 
@@ -427,8 +541,15 @@ extension View {
     }
 }
 
-// iOS Accent Color Palette
+// Apple iOS Accent Color Palette
 extension Color {
+    public static let appleBlue = Color(red: 0.04, green: 0.52, blue: 1.0)
+    public static let appleGreen = Color(red: 0.20, green: 0.78, blue: 0.35)
+    public static let appleIndigo = Color(red: 0.35, green: 0.34, blue: 0.84)
+    public static let appleOrange = Color(red: 1.0, green: 0.58, blue: 0.0)
+    public static let applePink = Color(red: 1.0, green: 0.18, blue: 0.33)
+    public static let applePurple = Color(red: 0.69, green: 0.32, blue: 0.87)
+    public static let appleYellow = Color(red: 1.0, green: 0.80, blue: 0.0)
     public static let emeraldAccent = Color(red: 0.15, green: 0.85, blue: 0.65)
     public static let cyanAccent = Color(red: 0.22, green: 0.74, blue: 0.97)
     public static let purpleAccent = Color(red: 0.51, green: 0.45, blue: 0.98)

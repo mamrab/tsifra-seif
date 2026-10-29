@@ -31,124 +31,126 @@ public struct SettingsView: View {
                 LiquidGlassBackground()
 
                 ScrollView {
-                    VStack(spacing: 18) {
-                        // Biometrics & Security Section
-                        VStack(spacing: 14) {
-                            HStack {
-                                Image(systemName: BiometricsService.shared.biometricType.systemIcon)
-                                    .foregroundColor(.white)
-                                    .frame(width: 24)
-                                Text(BiometricsService.shared.biometricType.title)
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Toggle("", isOn: $biometricsEnabled)
-                                    .tint(.white)
-                                    .onChange(of: biometricsEnabled) { saveSettings() }
-                            }
-
-                            Divider().background(Color.white.opacity(0.1))
-
-                            HStack {
-                                Image(systemName: "app.badge.checkmark")
-                                    .foregroundColor(.white.opacity(0.85))
-                                    .frame(width: 24)
-                                Text("Блокировка при сворачивании")
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Toggle("", isOn: $lockOnBackground)
-                                    .tint(.white)
-                                    .onChange(of: lockOnBackground) { saveSettings() }
-                            }
-
-                            Divider().background(Color.white.opacity(0.1))
-
-                            HStack {
-                                Image(systemName: "clock.fill")
-                                    .foregroundColor(.white.opacity(0.7))
-                                    .frame(width: 24)
-                                Text("Таймер автоблокировки")
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Picker("", selection: $autoLockMinutes) {
-                                    Text("1 мин").tag(1)
-                                    Text("5 мин").tag(5)
-                                    Text("15 мин").tag(15)
-                                    Text("Выкл").tag(0)
-                                }
-                                .pickerStyle(.menu)
-                                .tint(.white)
-                                .onChange(of: autoLockMinutes) { saveSettings() }
-                            }
-                        }
-                        .padding(18)
-                        .liquidGlassCard(cornerRadius: 20)
-
-                        // Backup & Export Section
-                        VStack(alignment: .leading, spacing: 14) {
-                            Text("Резервное копирование")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundColor(.white.opacity(0.6))
+                    VStack(spacing: 20) {
+                        // Section 1: Biometrics & Security (Classic Apple Inset Grouped)
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("АВТОРИЗАЦИЯ И БЕЗОПАСНОСТЬ")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.55))
                                 .padding(.horizontal, 4)
 
-                            Button(action: exportBackup) {
-                                HStack {
-                                    Image(systemName: "square.and.arrow.up.fill")
+                            VStack(spacing: 14) {
+                                HStack(spacing: 12) {
+                                    AppleSquircleIcon(icon: BiometricsService.shared.biometricType.systemIcon, gradientColors: [Color.appleGreen, Color.emeraldAccent], size: 30)
+                                    Text(BiometricsService.shared.biometricType.title)
+                                        .font(.system(size: 15, weight: .medium))
                                         .foregroundColor(.white)
-                                        .frame(width: 24)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Экспорт зашифрованного сейфа")
-                                            .foregroundColor(.white)
-                                            .font(.system(size: 14, weight: .medium))
-                                        Text("Файл защищен AES-GCM")
-                                            .font(.system(size: 11))
-                                            .foregroundColor(.white.opacity(0.5))
-                                    }
                                     Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(.white.opacity(0.3))
+                                    Toggle("", isOn: $biometricsEnabled)
+                                        .tint(Color.appleBlue)
+                                        .onChange(of: biometricsEnabled) { saveSettings() }
+                                }
+
+                                Divider().background(Color.white.opacity(0.08))
+
+                                HStack(spacing: 12) {
+                                    AppleSquircleIcon(icon: "app.badge.checkmark", gradientColors: [Color.appleBlue, Color.cyanAccent], size: 30)
+                                    Text("Блокировка при сворачивании")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Toggle("", isOn: $lockOnBackground)
+                                        .tint(Color.appleBlue)
+                                        .onChange(of: lockOnBackground) { saveSettings() }
+                                }
+
+                                Divider().background(Color.white.opacity(0.08))
+
+                                HStack(spacing: 12) {
+                                    AppleSquircleIcon(icon: "clock.fill", gradientColors: [Color.appleOrange, Color.appleYellow], size: 30)
+                                    Text("Автоблокировка")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Picker("", selection: $autoLockMinutes) {
+                                        Text("1 мин").tag(1)
+                                        Text("5 мин").tag(5)
+                                        Text("15 мин").tag(15)
+                                        Text("Никогда").tag(0)
+                                    }
+                                    .pickerStyle(.menu)
+                                    .tint(.white.opacity(0.8))
+                                    .onChange(of: autoLockMinutes) { saveSettings() }
                                 }
                             }
-
-                            Divider().background(Color.white.opacity(0.1))
-
-                            Button(action: { isFileImporterPresented = true }) {
-                                HStack {
-                                    Image(systemName: "square.and.arrow.down.fill")
-                                        .foregroundColor(.white.opacity(0.85))
-                                        .frame(width: 24)
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Импорт из файла .tsvault")
-                                            .foregroundColor(.white)
-                                            .font(.system(size: 14, weight: .medium))
-                                        Text("Восстановление всех записей")
-                                            .font(.system(size: 11))
-                                            .foregroundColor(.white.opacity(0.5))
-                                    }
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(.white.opacity(0.3))
-                                }
-                            }
+                            .padding(16)
+                            .liquidGlassCard(cornerRadius: 20)
                         }
-                        .padding(18)
-                        .liquidGlassCard(cornerRadius: 20)
 
-                        // About Card
-                        VStack(spacing: 6) {
-                            Text("Цифра-Сейф для iOS")
-                                .font(.system(size: 14, weight: .bold))
+                        // Section 2: Backup & Export
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("РЕЗЕРВНОЕ КОПИРОВАНИЕ")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.55))
+                                .padding(.horizontal, 4)
+
+                            VStack(spacing: 14) {
+                                Button(action: exportBackup) {
+                                    HStack(spacing: 12) {
+                                        AppleSquircleIcon(icon: "square.and.arrow.up.fill", gradientColors: [Color.appleBlue, Color.cyanAccent], size: 30)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Экспорт зашифрованного сейфа")
+                                                .foregroundColor(.white)
+                                                .font(.system(size: 15, weight: .medium))
+                                            Text("Файл защищен AES-GCM 256-bit")
+                                                .font(.system(size: 11))
+                                                .foregroundColor(.white.opacity(0.5))
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12, weight: .semibold))
+                                            .foregroundColor(.white.opacity(0.3))
+                                    }
+                                }
+
+                                Divider().background(Color.white.opacity(0.08))
+
+                                Button(action: { isFileImporterPresented = true }) {
+                                    HStack(spacing: 12) {
+                                        AppleSquircleIcon(icon: "square.and.arrow.down.fill", gradientColors: [Color.appleIndigo, Color.purpleAccent], size: 30)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Импорт из файла .tsvault")
+                                                .foregroundColor(.white)
+                                                .font(.system(size: 15, weight: .medium))
+                                            Text("Восстановление базы записей")
+                                                .font(.system(size: 11))
+                                                .foregroundColor(.white.opacity(0.5))
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12, weight: .semibold))
+                                            .foregroundColor(.white.opacity(0.3))
+                                    }
+                                }
+                            }
+                            .padding(16)
+                            .liquidGlassCard(cornerRadius: 20)
+                        }
+
+                        // Section 3: App Info & Architecture
+                        VStack(spacing: 8) {
+                            Text("Цифра-Сейф")
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
                                 .foregroundColor(.white)
-                            Text("Версия 1.0 • Apple CryptoKit & Pure Monochrome")
-                                .font(.system(size: 11))
+                            Text("Версия 1.0 (iOS 27 Liquid Glass)")
+                                .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.5))
-                            Text("100% Локально. Без серверов.")
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundColor(.white.opacity(0.8))
+                            Text("Apple CryptoKit • Zero-Knowledge • 100% Локально")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(Color.cyanAccent)
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(16)
+                        .padding(20)
                         .liquidGlassCard(cornerRadius: 18)
                     }
                     .padding(20)
@@ -159,6 +161,7 @@ public struct SettingsView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Готово") { dismiss() }
+                        .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white)
                 }
             }
@@ -201,24 +204,23 @@ public struct SettingsView: View {
     }
 
     private func exportBackup() {
-        do {
-            let data = try vaultService.exportEncryptedBackup()
-            self.backupDataToShare = data
-            self.isShareSheetPresented = true
-        } catch {
-            alertMessage = "Ошибка экспорта: \(error.localizedDescription)"
+        guard let data = try? vaultService.exportEncryptedBackup() else {
+            alertMessage = "Сейф заблокирован. Разблокируйте хранилище перед экспортом."
             showAlert = true
+            return
         }
+        self.backupDataToShare = data
+        self.isShareSheetPresented = true
     }
 
     private func importBackup(from url: URL) {
         do {
+            let accessing = url.startAccessingSecurityScopedResource()
+            defer { if accessing { url.stopAccessingSecurityScopedResource() } }
             let data = try Data(contentsOf: url)
-            if let token = vaultService.getSavedMasterToken() {
-                try vaultService.importEncryptedBackup(data: data, password: token)
-                alertMessage = "Сейф успешно восстановлен!"
-                showAlert = true
-            }
+            try vaultService.importEncryptedBackup(data: data)
+            alertMessage = "Резервная копия успешно импортирована!"
+            showAlert = true
         } catch {
             alertMessage = "Ошибка импорта: \(error.localizedDescription)"
             showAlert = true
@@ -227,20 +229,14 @@ public struct SettingsView: View {
 }
 
 #if canImport(UIKit)
-public struct ShareSheet: UIViewControllerRepresentable {
-    public let activityItems: [Any]
+struct ShareSheet: UIViewControllerRepresentable {
+    var activityItems: [Any]
+    var applicationActivities: [UIActivity]? = nil
 
-    public func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
     }
 
-    public func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-#else
-public struct ShareSheet: View {
-    public let activityItems: [Any]
-    public var body: some View {
-        Text("Поделиться")
-    }
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 #endif

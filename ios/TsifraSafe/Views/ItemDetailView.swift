@@ -62,30 +62,45 @@ public struct ItemDetailView: View {
         _cryptoWalletApp = State(initialValue: cd.walletApp ?? "")
     }
 
+    private var iconColors: [Color] {
+        switch itemType {
+        case .cryptoWallet:
+            return [Color.appleGreen, Color.emeraldAccent]
+        case .password:
+            return [Color.appleBlue, Color.cyanAccent]
+        case .creditCard:
+            return [Color.appleIndigo, Color.purpleAccent]
+        case .secureNote:
+            return [Color.appleOrange, Color.appleYellow]
+        case .apiKey:
+            return [Color.applePink, Color.applePurple]
+        }
+    }
+
     private var smartHints: [String] {
         var hints: [String] = []
         if title.trimmingCharacters(in: .whitespaces).isEmpty {
-            hints.append("Забыли указать название записи")
+            hints.append("Не указано название записи")
         }
         if itemType == .cryptoWallet {
             let filledCount = cryptoWords.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }.count
             let hasPk = !cryptoPrivateKey.trimmingCharacters(in: .whitespaces).isEmpty
             if filledCount == 0 && !hasPk {
-                hints.append("Забыли Seed-слова (\(cryptoWordCount) слов) или Private Key")
+                hints.append("Забыли добавить Seed-фразу или Private Key")
             } else if filledCount > 0 && filledCount < cryptoWordCount {
                 hints.append("Заполнено только \(filledCount) из \(cryptoWordCount) слов")
             }
             if cryptoAddress.trimmingCharacters(in: .whitespaces).isEmpty {
-                hints.append("Забыли публичный адрес кошелька для сверки")
+                hints.append("Рекомендуется добавить публичный адрес кошелька для сверки")
             }
         } else if itemType != .secureNote {
             if password.trimmingCharacters(in: .whitespaces).isEmpty {
-                hints.append("Забыли пароль — используйте «Сгенерировать»")
+                hints.append("Поле пароля не заполнено")
             } else if password.count < 10 {
-                hints.append("Пароль короче 10 символов — рекомендуется усилить")
+                hints.append("Пароль короче 10 символов — используйте «Сгенерировать»")
             }
             if username.trimmingCharacters(in: .whitespaces).isEmpty {
-                hints.append("Забыли логин / email")
+                hints.append("Не указан логин или почта")
             }
         }
         return hints
@@ -97,28 +112,50 @@ public struct ItemDetailView: View {
                 LiquidGlassBackground()
 
                 ScrollView {
-                    VStack(spacing: 16) {
-                        // Smart Hints Bar if any missing fields
+                    VStack(spacing: 20) {
+                        // 1. Classic Apple Header (Icon Squircle + Title Field)
+                        VStack(spacing: 12) {
+                            AppleSquircleIcon(icon: itemType.systemIcon, gradientColors: iconColors, size: 64)
+                                .shadow(color: iconColors.first?.opacity(0.4) ?? Color.clear, radius: 12, x: 0, y: 6)
+
+                            TextField(itemType == .cryptoWallet ? "Название кошелька" : "Название учетной записи", text: $title)
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 20)
+
+                            // Type Picker (Segmented)
+                            Picker("Тип записи", selection: $itemType) {
+                                ForEach(VaultItemType.allCases) { t in
+                                    Text(t.title).tag(t)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .padding(.horizontal, 16)
+                        }
+                        .padding(.top, 10)
+
+                        // 2. Smart Security Hints (if any)
                         if !smartHints.isEmpty {
-                            VStack(alignment: .leading, spacing: 6) {
-                                HStack {
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack(spacing: 8) {
                                     Image(systemName: "lightbulb.fill")
+                                        .foregroundColor(Color.appleYellow)
                                         .font(.system(size: 13))
-                                        .foregroundColor(.white)
-                                    Text("Подсказки ассистента:")
-                                        .font(.system(size: 12, weight: .semibold))
+                                    Text("Рекомендации ассистента")
+                                        .font(.system(size: 13, weight: .semibold))
                                         .foregroundColor(.white)
                                 }
 
                                 ForEach(smartHints, id: \.self) { hint in
                                     HStack(alignment: .top, spacing: 6) {
-                                        Image(systemName: "exclamationmark.triangle")
+                                        Image(systemName: "exclamationmark.triangle.fill")
                                             .font(.system(size: 10))
-                                            .foregroundColor(.white.opacity(0.7))
+                                            .foregroundColor(Color.appleOrange)
                                             .padding(.top, 2)
                                         Text(hint)
                                             .font(.system(size: 12))
-                                            .foregroundColor(.white.opacity(0.7))
+                                            .foregroundColor(.white.opacity(0.85))
                                     }
                                 }
                             }
@@ -129,56 +166,35 @@ public struct ItemDetailView: View {
                                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                                         .fill(.ultraThinMaterial)
                                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .fill(Color.amberAccent.opacity(0.10))
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .stroke(Color.amberAccent.opacity(0.35), lineWidth: 1)
+                                        .stroke(Color.appleOrange.opacity(0.35), lineWidth: 1.0)
                                 }
                             )
+                            .padding(.horizontal, 16)
                         }
 
-                        // Title & Type Header
-                        VStack(spacing: 12) {
-                            HStack {
-                                TextField(itemType == .cryptoWallet ? "Название (MetaMask, Ledger)" : "Название (Google, GitHub)", text: $title)
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(.white)
-
-                                Button(action: { favorite.toggle() }) {
-                                    Image(systemName: favorite ? "star.fill" : "star")
-                                        .font(.system(size: 18))
-                                        .foregroundColor(favorite ? .white : .white.opacity(0.3))
-                                }
-                            }
-
-                            // Type Picker
-                            Picker("Тип", selection: $itemType) {
-                                ForEach(VaultItemType.allCases) { t in
-                                    Text(t.title).tag(t)
-                                }
-                            }
-                            .pickerStyle(.segmented)
-                        }
-                        .padding(16)
-                        .liquidGlassCard(cornerRadius: 20)
-
-                        // CRYPTO WALLET SECTION
+                        // 3. CRYPTO WALLET SECTION
                         if itemType == .cryptoWallet {
-                            VStack(spacing: 14) {
-                                // Subtab picker: Seed / Private Key / Settings
-                                Picker("Раздел кошелька", selection: $cryptoSubtab) {
-                                    Text("Seed-фраза").tag(0)
-                                    Text("Private Key").tag(1)
-                                    Text("Сеть").tag(2)
-                                }
-                                .pickerStyle(.segmented)
+                            VStack(alignment: .leading, spacing: 14) {
+                                Text("ПАРАМЕТРЫ КОШЕЛЬКА")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.white.opacity(0.55))
+                                    .padding(.horizontal, 4)
 
-                                if cryptoSubtab == 0 {
-                                    // Seed words subtab
-                                    VStack(spacing: 12) {
+                                VStack(spacing: 14) {
+                                    // Subtab: Seed / Private Key / Network
+                                    Picker("Раздел", selection: $cryptoSubtab) {
+                                        Text("Seed-фраза").tag(0)
+                                        Text("Private Key").tag(1)
+                                        Text("Сеть и RPC").tag(2)
+                                    }
+                                    .pickerStyle(.segmented)
+
+                                    if cryptoSubtab == 0 {
+                                        // Words length picker
                                         HStack {
-                                            Text("Количество слов:")
-                                                .font(.system(size: 12, weight: .medium))
-                                                .foregroundColor(.white.opacity(0.6))
+                                            Text("Длина фразы:")
+                                                .font(.system(size: 13, weight: .medium))
+                                                .foregroundColor(.white.opacity(0.7))
                                             Spacer()
                                             Picker("Слов", selection: $cryptoWordCount) {
                                                 Text("12").tag(12)
@@ -186,20 +202,20 @@ public struct ItemDetailView: View {
                                                 Text("24").tag(24)
                                             }
                                             .pickerStyle(.segmented)
-                                            .frame(width: 140)
+                                            .frame(width: 150)
                                             .onChange(of: cryptoWordCount) { _, newCount in
                                                 adjustWordCount(to: newCount)
                                             }
                                         }
 
-                                        // Words Grid
+                                        // Seed Words Grid
                                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                                             ForEach(0..<cryptoWordCount, id: \.self) { idx in
                                                 HStack(spacing: 6) {
                                                     Text(String(format: "%02d", idx + 1))
-                                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
                                                         .foregroundColor(.white.opacity(0.4))
-                                                        .frame(width: 18)
+                                                        .frame(width: 20)
 
                                                     TextField("слово", text: Binding(
                                                         get: { idx < cryptoWords.count ? cryptoWords[idx] : "" },
@@ -226,179 +242,204 @@ public struct ItemDetailView: View {
                                                 Image(systemName: "doc.on.clipboard")
                                                 Text("Вставить сид-фразу из буфера")
                                             }
-                                            .font(.system(size: 12, weight: .semibold))
+                                            .font(.system(size: 13, weight: .semibold))
                                             .foregroundColor(.white)
                                             .frame(maxWidth: .infinity)
                                             .padding(.vertical, 10)
-                                            .background(
-                                                ZStack {
-                                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                        .fill(.ultraThinMaterial)
-                                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                                }
-                                            )
+                                            .background(Color.white.opacity(0.12))
+                                            .clipShape(RoundedRectangle(cornerRadius: 12))
                                         }
 
-                                        glassInputField(title: "Passphrase (25-е слово)", value: $cryptoPassphrase, icon: "lock.shield", isSecure: true)
+                                        appleInputField(title: "Passphrase (25-е слово)", value: $cryptoPassphrase, icon: "lock.shield", isSecure: true)
+                                    } else if cryptoSubtab == 1 {
+                                        // Private key subtab
+                                        VStack(alignment: .leading, spacing: 10) {
+                                            Text("Приватный ключ кошелька")
+                                                .font(.system(size: 12, weight: .medium))
+                                                .foregroundColor(.white.opacity(0.6))
+
+                                            HStack {
+                                                Image(systemName: "key.fill")
+                                                    .foregroundColor(.white.opacity(0.4))
+                                                    .frame(width: 20)
+
+                                                if isPrivateKeyVisible {
+                                                    TextField("0x... или Base58", text: $cryptoPrivateKey)
+                                                        .font(.system(size: 13, design: .monospaced))
+                                                        .foregroundColor(.white)
+                                                        .autocapitalization(.none)
+                                                        .disableAutocorrection(true)
+                                                } else {
+                                                    SecureField("0x... или Base58", text: $cryptoPrivateKey)
+                                                        .font(.system(size: 13, design: .monospaced))
+                                                        .foregroundColor(.white)
+                                                }
+
+                                                Button(action: { isPrivateKeyVisible.toggle() }) {
+                                                    Image(systemName: isPrivateKeyVisible ? "eye.slash.fill" : "eye.fill")
+                                                        .foregroundColor(.white.opacity(0.6))
+                                                }
+                                            }
+                                            .padding(12)
+                                            .liquidGlassInput(cornerRadius: 12)
+
+                                            Button(action: pastePrivateKey) {
+                                                HStack(spacing: 6) {
+                                                    Image(systemName: "doc.on.clipboard.fill")
+                                                    Text("Вставить Private Key из буфера")
+                                                }
+                                                .font(.system(size: 13, weight: .semibold))
+                                                .foregroundColor(.white)
+                                                .frame(maxWidth: .infinity)
+                                                .padding(.vertical, 10)
+                                                .background(Color.white.opacity(0.12))
+                                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                            }
+                                        }
+                                    } else {
+                                        // Network subtab
+                                        VStack(spacing: 10) {
+                                            appleInputField(title: "Блокчейн / Сеть", value: $cryptoNetwork, icon: "globe")
+                                            appleInputField(title: "Публичный адрес", value: $cryptoAddress, icon: "number")
+                                            appleInputField(title: "Путь деривации", value: $cryptoDerivationPath, icon: "arrow.triangle.branch")
+                                            appleInputField(title: "RPC URL", value: $cryptoRpcUrl, icon: "link")
+                                            appleInputField(title: "Chain ID", value: $cryptoChainId, icon: "tag")
+                                            appleInputField(title: "Приложение кошелька", value: $cryptoWalletApp, icon: "apps.iphone")
+                                        }
                                     }
-                                } else if cryptoSubtab == 1 {
-                                    // Private Key subtab
-                                    VStack(alignment: .leading, spacing: 10) {
-                                        Text("Закрытый ключ (Private Key)")
-                                            .font(.system(size: 12, weight: .medium))
-                                            .foregroundColor(.white.opacity(0.6))
+                                }
+                                .padding(16)
+                                .liquidGlassCard(cornerRadius: 20)
+                            }
+                            .padding(.horizontal, 16)
+                        }
+
+                        // 4. ACCOUNT CREDENTIALS (For Passwords / Cards / API Keys)
+                        if itemType != .secureNote && itemType != .cryptoWallet {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("УЧЕТНЫЕ ДАННЫЕ")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.white.opacity(0.55))
+                                    .padding(.horizontal, 4)
+
+                                VStack(spacing: 12) {
+                                    appleInputField(title: "Логин / Email / Телефон", value: $username, icon: "person.fill")
+
+                                    // Password field with Reveal and Generator
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        HStack {
+                                            Text("Пароль")
+                                                .font(.system(size: 12, weight: .medium))
+                                                .foregroundColor(.white.opacity(0.6))
+                                            Spacer()
+                                            Button(action: { isGeneratorPresented = true }) {
+                                                HStack(spacing: 4) {
+                                                    Image(systemName: "sparkles")
+                                                    Text("Сгенерировать")
+                                                }
+                                                .font(.system(size: 12, weight: .semibold))
+                                                .foregroundColor(Color.cyanAccent)
+                                            }
+                                        }
 
                                         HStack {
-                                            Image(systemName: "key.fill")
+                                            Image(systemName: "lock.fill")
                                                 .foregroundColor(.white.opacity(0.4))
                                                 .frame(width: 20)
 
-                                            if isPrivateKeyVisible {
-                                                TextField("0x... или Base58", text: $cryptoPrivateKey)
-                                                    .font(.system(size: 13, design: .monospaced))
+                                            if isPasswordVisible {
+                                                TextField("Пароль", text: $password)
+                                                    .font(.system(size: 14, design: .monospaced))
                                                     .foregroundColor(.white)
-                                                    .autocapitalization(.none)
-                                                    .disableAutocorrection(true)
                                             } else {
-                                                SecureField("0x... или Base58", text: $cryptoPrivateKey)
-                                                    .font(.system(size: 13, design: .monospaced))
+                                                SecureField("Пароль", text: $password)
+                                                    .font(.system(size: 14, design: .monospaced))
                                                     .foregroundColor(.white)
                                             }
 
-                                            Button(action: { isPrivateKeyVisible.toggle() }) {
-                                                Image(systemName: isPrivateKeyVisible ? "eye.slash.fill" : "eye.fill")
+                                            Button(action: { isPasswordVisible.toggle() }) {
+                                                Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
                                                     .foregroundColor(.white.opacity(0.6))
+                                            }
+
+                                            if !password.isEmpty {
+                                                Button(action: {
+                                                    #if canImport(UIKit)
+                                                    UIPasteboard.general.string = password
+                                                    let impact = UINotificationFeedbackGenerator()
+                                                    impact.notificationOccurred(.success)
+                                                    #endif
+                                                }) {
+                                                    Image(systemName: "doc.on.doc.fill")
+                                                        .foregroundColor(.white.opacity(0.8))
+                                                }
                                             }
                                         }
                                         .padding(12)
+                                        .liquidGlassInput(cornerRadius: 14)
+                                    }
+
+                                    appleInputField(title: "Веб-сайт", value: $url, icon: "link")
+                                }
+                                .padding(16)
+                                .liquidGlassCard(cornerRadius: 20)
+                            }
+                            .padding(.horizontal, 16)
+                        }
+
+                        // 5. ADDITIONAL SETTINGS (Category, Favorite, Note)
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("ДОПОЛНИТЕЛЬНО")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white.opacity(0.55))
+                                .padding(.horizontal, 4)
+
+                            VStack(spacing: 14) {
+                                // Favorite toggle row
+                                HStack {
+                                    AppleSquircleIcon(icon: "star.fill", gradientColors: [Color.appleYellow, Color.appleOrange], size: 30)
+                                    Text("Избранная запись")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Toggle("", isOn: $favorite)
+                                        .tint(Color.appleBlue)
+                                }
+
+                                Divider().background(Color.white.opacity(0.08))
+
+                                appleInputField(title: "Категория", value: $category, icon: "folder.fill")
+
+                                Divider().background(Color.white.opacity(0.08))
+
+                                // Secure Notes Editor
+                                VStack(alignment: .leading, spacing: 6) {
+                                    Text("Защищенная заметка")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.6))
+
+                                    TextEditor(text: $notes)
+                                        .frame(minHeight: 90)
+                                        .font(.system(size: 14, design: .monospaced))
+                                        .foregroundColor(.white)
+                                        .scrollContentBackground(.hidden)
+                                        .padding(8)
                                         .liquidGlassInput(cornerRadius: 12)
-
-                                        Button(action: pastePrivateKey) {
-                                            HStack(spacing: 6) {
-                                                Image(systemName: "doc.on.clipboard.fill")
-                                                Text("Вставить Private Key из буфера")
-                                            }
-                                            .font(.system(size: 12, weight: .semibold))
-                                            .foregroundColor(.white)
-                                            .frame(maxWidth: .infinity)
-                                            .padding(.vertical, 10)
-                                            .background(
-                                                ZStack {
-                                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                        .fill(.ultraThinMaterial)
-                                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                                }
-                                            )
-                                        }
-                                    }
-                                } else {
-                                    // Network settings subtab
-                                    VStack(spacing: 10) {
-                                        glassInputField(title: "Сеть / Блокчейн", value: $cryptoNetwork, icon: "globe")
-                                        glassInputField(title: "Публичный адрес", value: $cryptoAddress, icon: "number")
-                                        glassInputField(title: "Путь деривации", value: $cryptoDerivationPath, icon: "arrow.triangle.branch")
-                                        glassInputField(title: "RPC URL", value: $cryptoRpcUrl, icon: "link")
-                                        glassInputField(title: "Chain ID", value: $cryptoChainId, icon: "tag")
-                                        glassInputField(title: "Приложение кошелька", value: $cryptoWalletApp, icon: "apps.iphone")
-                                    }
                                 }
                             }
                             .padding(16)
                             .liquidGlassCard(cornerRadius: 20)
                         }
+                        .padding(.horizontal, 16)
 
-                        // CREDENTIALS BLOCK (For Passwords / Cards / API Keys)
-                        if itemType != .secureNote && itemType != .cryptoWallet {
-                            VStack(spacing: 12) {
-                                glassInputField(title: "Логин / Email", value: $username, icon: "person.fill")
-
-                                // Password with Reveal & Generator
-                                VStack(alignment: .leading, spacing: 4) {
-                                    HStack {
-                                        Text("Пароль")
-                                            .font(.system(size: 12, weight: .medium))
-                                            .foregroundColor(.white.opacity(0.6))
-                                        Spacer()
-                                        Button(action: { isGeneratorPresented = true }) {
-                                            HStack(spacing: 4) {
-                                                Image(systemName: "sparkles")
-                                                Text("Сгенерировать")
-                                            }
-                                            .font(.system(size: 12, weight: .semibold))
-                                            .foregroundColor(.white)
-                                        }
-                                    }
-
-                                    HStack {
-                                        Image(systemName: "key.fill")
-                                            .foregroundColor(.white.opacity(0.4))
-                                            .frame(width: 20)
-
-                                        if isPasswordVisible {
-                                            TextField("Пароль", text: $password)
-                                                .font(.system(size: 14, design: .monospaced))
-                                                .foregroundColor(.white)
-                                        } else {
-                                            SecureField("Пароль", text: $password)
-                                                .font(.system(size: 14, design: .monospaced))
-                                                .foregroundColor(.white)
-                                        }
-
-                                        Button(action: { isPasswordVisible.toggle() }) {
-                                            Image(systemName: isPasswordVisible ? "eye.slash.fill" : "eye.fill")
-                                                .foregroundColor(.white.opacity(0.6))
-                                        }
-
-                                        if !password.isEmpty {
-                                            Button(action: {
-                                                #if canImport(UIKit)
-                                                UIPasteboard.general.string = password
-                                                let impact = UINotificationFeedbackGenerator()
-                                                impact.notificationOccurred(.success)
-                                                #endif
-                                            }) {
-                                                Image(systemName: "doc.on.doc.fill")
-                                                    .foregroundColor(.white)
-                                            }
-                                        }
-                                    }
-                                }
-                                .padding(12)
-                                .liquidGlassInput(cornerRadius: 14)
-
-                                glassInputField(title: "Веб-сайт", value: $url, icon: "link")
-                            }
-                            .padding(16)
-                            .liquidGlassCard(cornerRadius: 20)
-                        }
-
-                        // Notes Block
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Защищенная заметка / Описание")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.white.opacity(0.6))
-
-                            TextEditor(text: $notes)
-                                .frame(minHeight: 100)
-                                .font(.system(size: 14, design: .monospaced))
-                                .foregroundColor(.white)
-                                .scrollContentBackground(.hidden)
-                                .padding(10)
-                                .liquidGlassInput(cornerRadius: 14)
-                        }
-                        .padding(16)
-                        .liquidGlassCard(cornerRadius: 20)
-
-                        // Delete Button (if editing existing item)
+                        // 6. Delete Button (if editing existing item)
                         if originalItem != nil {
                             Button(role: .destructive, action: { showDeleteConfirmation = true }) {
-                                HStack {
+                                HStack(spacing: 8) {
                                     Image(systemName: "trash.fill")
                                     Text("Удалить запись")
                                 }
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(Color(red: 1.0, green: 0.35, blue: 0.35))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 14)
@@ -407,14 +448,15 @@ public struct ItemDetailView: View {
                                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                                             .fill(.ultraThinMaterial)
                                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                                            .stroke(Color.red.opacity(0.25), lineWidth: 1.0)
                                     }
                                 )
                             }
-                            .padding(.top, 8)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 4)
                         }
                     }
-                    .padding(20)
+                    .padding(.bottom, 36)
                 }
             }
             .navigationTitle(originalItem == nil ? "Новая запись" : "Редактирование")
@@ -426,7 +468,7 @@ public struct ItemDetailView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Сохранить") { saveRecord() }
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 15, weight: .bold))
                         .foregroundColor(.white)
                         .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
@@ -444,6 +486,8 @@ public struct ItemDetailView: View {
                     }
                 }
                 Button("Отмена", role: .cancel) {}
+            } message: {
+                Text("Эта запись будет навсегда стерта из локального зашифрованного хранилища.")
             }
         }
     }
@@ -481,7 +525,7 @@ public struct ItemDetailView: View {
         #endif
     }
 
-    private func glassInputField(title: String, value: Binding<String>, icon: String, isSecure: Bool = false) -> some View {
+    private func appleInputField(title: String, value: Binding<String>, icon: String, isSecure: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(.system(size: 12, weight: .medium))

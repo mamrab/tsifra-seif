@@ -24,99 +24,140 @@ public struct GeneratorSheet: View {
         self.onSelect = onSelect
     }
 
+    private var entropyColor: Color {
+        let e = generated?.entropy ?? 0
+        if e > 70 { return Color.appleGreen }
+        if e > 45 { return Color.appleYellow }
+        return Color.appleOrange
+    }
+
     public var body: some View {
         NavigationStack {
             ZStack {
                 LiquidGlassBackground()
 
                 VStack(spacing: 20) {
-                    // Mode Picker
+                    // Mode Picker (Apple Segmented Control)
                     Picker("Режим", selection: $mode) {
                         Text("Пароль").tag(0)
                         Text("Фраза").tag(1)
-                        Text("PIN").tag(2)
+                        Text("PIN-код").tag(2)
                     }
                     .pickerStyle(.segmented)
                     .onChange(of: mode) { regenerate() }
 
-                    // Display Box with Entropy
-                    VStack(spacing: 12) {
+                    // Display Box with Apple Entropy Meter
+                    VStack(spacing: 14) {
                         Text(generated?.value ?? "...")
-                            .font(.system(size: 18, weight: .bold, design: .monospaced))
+                            .font(.system(size: 20, weight: .bold, design: .monospaced))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.center)
                             .lineLimit(3)
                             .padding(.horizontal, 10)
 
-                        HStack {
-                            Text(generated?.strengthLabel ?? "")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(.white.opacity(0.8))
+                        // Strength Meter Bar
+                        VStack(spacing: 6) {
+                            GeometryReader { proxy in
+                                ZStack(alignment: .leading) {
+                                    Capsule()
+                                        .fill(Color.white.opacity(0.12))
+                                        .frame(height: 5)
 
-                            Spacer()
+                                    let ratio = min(max((generated?.entropy ?? 0) / 100.0, 0.15), 1.0)
+                                    Capsule()
+                                        .fill(entropyColor)
+                                        .frame(width: proxy.size.width * ratio, height: 5)
+                                        .shadow(color: entropyColor.opacity(0.5), radius: 4)
+                                }
+                            }
+                            .frame(height: 5)
 
-                            Text("\(Int(generated?.entropy ?? 0)) бит энтропии")
-                                .font(.system(size: 11, design: .monospaced))
-                                .foregroundColor(.white.opacity(0.5))
+                            HStack {
+                                Text(generated?.strengthLabel ?? "")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(entropyColor)
+
+                                Spacer()
+
+                                Text("\(Int(generated?.entropy ?? 0)) бит стойкости")
+                                    .font(.system(size: 11, design: .monospaced))
+                                    .foregroundColor(.white.opacity(0.5))
+                            }
                         }
                     }
-                    .padding(18)
-                    .liquidGlassCard(cornerRadius: 20)
+                    .padding(20)
+                    .liquidGlassCard(cornerRadius: 22)
 
-                    // Controls based on Mode
+                    // Controls Section
                     VStack(spacing: 16) {
                         if mode == 0 {
-                            VStack(alignment: .leading, spacing: 6) {
+                            VStack(alignment: .leading, spacing: 8) {
                                 HStack {
-                                    Text("Длина: \(Int(length)) символов")
-                                        .font(.system(size: 13, weight: .medium))
+                                    Text("Длина:")
+                                        .font(.system(size: 14, weight: .medium))
                                         .foregroundColor(.white)
                                     Spacer()
+                                    Text("\(Int(length)) символов")
+                                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                        .foregroundColor(Color.cyanAccent)
                                 }
                                 Slider(value: $length, in: 8...48, step: 1)
-                                    .tint(.white)
+                                    .tint(Color.appleBlue)
                                     .onChange(of: length) { regenerate() }
                             }
 
-                            Divider().background(Color.white.opacity(0.1))
+                            Divider().background(Color.white.opacity(0.08))
 
-                            Toggle("Заглавные (A-Z)", isOn: $includeUpper)
-                                .tint(.white)
+                            Toggle("Заглавные буквы (A-Z)", isOn: $includeUpper)
+                                .tint(Color.appleBlue)
                                 .onChange(of: includeUpper) { regenerate() }
 
-                            Toggle("Строчные (a-z)", isOn: $includeLower)
-                                .tint(.white)
+                            Toggle("Строчные буквы (a-z)", isOn: $includeLower)
+                                .tint(Color.appleBlue)
                                 .onChange(of: includeLower) { regenerate() }
 
                             Toggle("Цифры (0-9)", isOn: $includeDigits)
-                                .tint(.white)
+                                .tint(Color.appleBlue)
                                 .onChange(of: includeDigits) { regenerate() }
 
-                            Toggle("Спецсимволы (!@#$)", isOn: $includeSymbols)
-                                .tint(.white)
+                            Toggle("Спецсимволы (!@#$%^&*)", isOn: $includeSymbols)
+                                .tint(Color.appleBlue)
                                 .onChange(of: includeSymbols) { regenerate() }
                         } else if mode == 1 {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Количество слов: \(Int(wordCount))")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundColor(.white)
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text("Количество слов:")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Text("\(Int(wordCount))")
+                                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                        .foregroundColor(Color.cyanAccent)
+                                }
                                 Slider(value: $wordCount, in: 3...8, step: 1)
-                                    .tint(.white)
+                                    .tint(Color.appleBlue)
                                     .onChange(of: wordCount) { regenerate() }
                             }
                         } else {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Длина PIN: \(Int(pinLength)) цифр")
-                                    .font(.system(size: 13, weight: .medium))
-                                    .foregroundColor(.white)
+                            VStack(alignment: .leading, spacing: 8) {
+                                HStack {
+                                    Text("Длина PIN:")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.white)
+                                    Spacer()
+                                    Text("\(Int(pinLength)) цифр")
+                                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                        .foregroundColor(Color.cyanAccent)
+                                }
                                 Slider(value: $pinLength, in: 4...12, step: 1)
-                                    .tint(.white)
+                                    .tint(Color.appleBlue)
                                     .onChange(of: pinLength) { regenerate() }
                             }
                         }
                     }
+                    .font(.system(size: 14))
                     .foregroundColor(.white)
-                    .padding(16)
+                    .padding(18)
                     .liquidGlassCard(cornerRadius: 20)
 
                     Spacer()
@@ -177,6 +218,7 @@ public struct GeneratorSheet: View {
                 ToolbarItem(placement: .primaryAction) {
                     Button(action: regenerate) {
                         Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.white)
                     }
                 }
@@ -195,7 +237,6 @@ public struct GeneratorSheet: View {
 
         switch mode {
         case 0:
-            // Ensure at least one character set is selected
             let u = includeUpper, l = includeLower, d = includeDigits, s = includeSymbols
             let safeL = (!u && !l && !d && !s) ? true : l
             generated = PasswordGenerator.shared.generate(

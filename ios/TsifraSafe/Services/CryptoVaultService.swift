@@ -285,6 +285,20 @@ public final class CryptoVaultService: ObservableObject {
         return try Data(contentsOf: vaultURL)
     }
 
+    public func importEncryptedBackup(data: Data) throws {
+        guard data.count > 20 else { throw CryptoVaultError.fileCorrupted }
+        let tempURL = vaultURL.appendingPathExtension("import")
+        try data.write(to: tempURL, options: .atomic)
+
+        let original = vaultURL
+        try? fileManager.removeItem(at: original)
+        try fileManager.moveItem(at: tempURL, to: original)
+
+        if let token = getSavedMasterToken() {
+            try? unlock(password: token)
+        }
+    }
+
     public func importEncryptedBackup(data: Data, password: String) throws {
         guard data.count > 20 else { throw CryptoVaultError.fileCorrupted }
         let tempURL = vaultURL.appendingPathExtension("import")
